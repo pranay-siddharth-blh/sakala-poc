@@ -1,0 +1,233 @@
+"""Builds Sakala_Mitra_Models_and_Specs.pdf in the project root from the facts in Mitra_RD_Handoff.md section 3
+(Gemini only, 26 Oct 2026). Same method as the questionnaire: HTML -> headless Edge over CDP -> Page.printToPDF.
+Run from anywhere: python tools/make_models_specs.py        (keeps the previous PDF in tools/backups/)"""
+import asyncio
+import base64
+import html
+import shutil
+import sys
+from datetime import date
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "mitra" / "tests"))
+STAMP = "26 Oct 2026"
+
+CSS = """
+@page { size: A4; margin: 14mm 12mm; }
+body { font-family: "Segoe UI","Nirmala UI",sans-serif; color:#1e2633; font-size:10.5px; line-height:1.4; }
+h1 { font-size:21px; color:#12305c; margin:0 0 2px; } .by { color:#5d6878; font-size:10px; margin:0 0 10px; }
+h2 { font-size:14px; color:#12305c; margin:18px 0 6px; border-bottom:2px solid #16c784; padding-bottom:3px; page-break-after:avoid; }
+h3 { font-size:11.5px; color:#12305c; margin:12px 0 4px; page-break-after:avoid; }
+p { margin:0 0 7px; } p.lead { color:#3c4652; margin:0 0 10px; }
+table { width:100%; border-collapse:collapse; margin:4px 0 10px; page-break-inside:auto; } tr { page-break-inside:avoid; }
+th { background:#12305c; color:#fff; text-align:left; padding:5px 6px; font-size:9.8px; }
+td { padding:4px 6px; border-bottom:1px solid #e3e8ef; vertical-align:top; }
+tr:nth-child(even) td { background:#f6f8fb; }
+td.n { color:#8a95a5; width:18px; } td.m { font-family:Consolas,"Cascadia Mono",monospace; font-size:9.8px; white-space:nowrap; font-weight:600; color:#0f3d2e; }
+code { font-family:Consolas,"Cascadia Mono",monospace; font-size:9.6px; background:#eef2f6; padding:0 3px; border-radius:3px; }
+.tag { display:inline-block; border-radius:10px; padding:0 6px; font-size:9.3px; font-weight:600; }
+.p { background:#e8f7ee; color:#166534; } .b { background:#eef2f6; color:#334155; } .x { background:#fdecec; color:#9f1d1d; } .d { background:#fff4e5; color:#9a4b00; }
+ul, ol { margin:2px 0 8px 18px; padding:0; } li { margin:2px 0; }
+.box { border:1px solid #cfe9db; background:#f3fbf6; border-radius:6px; padding:7px 10px; margin:6px 0 10px; }
+.small { color:#5d6878; font-size:9.6px; }
+"""
+
+
+def e(s: str) -> str:
+    return html.escape(s, quote=False)
+
+
+def table(head, rows, cls=None):
+    out = ["<table><tr>" + "".join(f"<th>{h}</th>" for h in head) + "</tr>"]
+    for r in rows:
+        cells = []
+        for i, c in enumerate(r):
+            k = (cls or {}).get(i, "")
+            cells.append(f"<td class='{k}'>{c}</td>" if k else f"<td>{c}</td>")
+        out.append("<tr>" + "".join(cells) + "</tr>")
+    out.append("</table>")
+    return "".join(out)
+
+
+P, B, X, D = "<span class='tag p'>Primary</span>", "<span class='tag b'>Backup</span>", "<span class='tag x'>Removed</span>", "<span class='tag d'>Dormant</span>"
+
+GLANCE = [
+    ("1", "gemini-3.8-live", "Google Gemini API", "Full-duplex voice on all three desks, English <b>and Kannada</b>: hears, decides, calls functions, speaks", P),
+    ("2", "gemini-3.8-flash", "Google Gemini API", "Mitra cascade brain (one intent as JSON); Kannada rendering of replies; the document reader's fallback", P),
+    ("3", "gemini-3.6-flash", "Google Gemini API", "<b>Every POC job</b>: complaint understanding, petition photo, ATR draft and check, AI mode, Kannada for officers, briefs; the document reader's three reads and one orientation voter; POC speech-to-text backup", P),
+    ("4", "gemini-3.1-flash-lite", "Google Gemini API", "Speech-to-text (Mitra cascade, the wake-word scanner, POC voice notes); document orientation voter; last brain backup; POC understanding backup", P),
+    ("5", "gemini-3.5-flash", "Google Gemini API", "Mitra brain backup when 3.8 Flash is busy. Deprecated by Google and routed to 3.6 Flash", B),
+    ("6", "gemini-3.5-flash-lite", "Google Gemini API", "Mitra brain backup; speech-to-text backup", B),
+    ("7", "gemini-3.8-flash-tts", "Google Gemini API", "Mitra's voice on the cascade path only (English and Kannada), voice Kore", B),
+    ("8", "gemini-3.8-flash-lite-tts", "Google Gemini API", "Voice backup", B),
+    ("9", "gemini-3.1-flash-tts-preview", "Google Gemini API", "Last voice backup (legacy preview)", B),
+    ("10", "Browser Web Speech", "Edge / Chrome / Brave, on the device", "Fast wake-word path when its cloud service is reachable; last-resort voice", B),
+    ("11", "TF-IDF + SGD classifiers + nearest neighbours", "Offline, inside the Sakala POC (scikit-learn)", "Second opinion on every complaint; the whole job when no model is reachable", "<span class='tag p'>Always on</span>"),
+    ("12", "Rules brain (regex)", "Inside Mitra", "Navigation, charts, theme, identity, confirmations, most data questions, Kannada navigation; the last fallback for every intent", "<span class='tag p'>Always on</span>"),
+    ("–", "qwen4-deploy, qwen3-asr, qwen3-tts", "Office H200 gateway (VPN)", "Removed on 23 Oct 2026. No code path calls the gateway any more", X),
+    ("–", "saaras:v4, bulbul:v4-flash", "Sarvam AI", "Adapters still in speech.py; never chosen automatically, only if MITRA_STT / MITRA_TTS name them and a key exists", D),
+]
+
+LIVE_SPECS = [
+    ("Inputs / outputs", "Text, image, audio, video in; text and audio out"),
+    ("Input / output token limit", "131,072 / 65,536"),
+    ("Supported", "Function calling, Live API, native audio generation, interleaved thinking, search grounding"),
+    ("Not supported", "Structured output; text-only replies on this model"),
+]
+
+MITRA_ROWS = [
+    ("Full-duplex conversation (English and Kannada)", "<span class='m'>gemini-3.8-live</span>", "WebSocket <code>BidiGenerateContent</code>, relayed by <code>mitra/server/live.py</code>; the key never reaches the browser",
+     "16 kHz 16-bit PCM in, 24 kHz PCM out. Voice Kore, temperature 0.6. Google's voice activity detection: 700 ms of silence ends a turn, 200 ms prefix padding. Input and output transcription on. <code>languageCode kn-IN</code> on a Kannada session. Setup = one system instruction per profile (the Kannada persona block first on a Kannada session) + screen context + the last 6 turns + function declarations: every cascade intent for the profile except stop, repeat and smalltalk, plus the ten data functions."),
+    ("Cascade brain: one intent from a closed list", "<span class='m'>gemini-3.8-flash</span> → 3.5-flash (routed to 3.6 by Google) → 3.5-flash-lite → 3.1-flash-lite → rules", "<code>models/{m}:generateContent</code>",
+     "Temperature 0, thinking level low, a response schema whose <code>intent</code> field is the enum of that profile's intents, so the model can only choose an action. A 429 parks a model 30 min, a 503 2 min, a 404 for good. A rules fast path answers navigation, chart switching, theme, identity, confirmations and most data questions before any model is asked."),
+    ("Speech-to-text: cascade turns, the 'Hey Mitra' scanner, 'Teach Mitra your voice'", "<span class='m'>gemini-3.1-flash-lite</span> → 3.5-flash-lite → 3.8-flash → browser recogniser", "<code>generateContent</code>, 16 kHz WAV inline",
+     "'Transcribe exactly' prompt, temperature 0, thinking low. Fewer than 4 letters = no speech. Every utterance while Mitra is idle is posted with <code>wake_only:true</code>; the server acts only if it begins with the wake word (English or ಹೇ ಮಿತ್ರ)."),
+    ("Kannada rendering of replies (<code>main.kn_say</code>, <code>translate_kn</code>)", "the brain chain, so <span class='m'>gemini-3.8-flash</span> first", "<code>generateContent</code>",
+     "<code>KN_PROMPT</code>: casual, warm, code-mixed spoken Kannada; ids, names, numbers, dates kept as written; temperature 0.1; the first sentence translated in parallel. Used for every reply of a Kannada session that arrives over HTTP (document read, form submitted, photo, updates)."),
+    ("Cascade voice", "<span class='m'>gemini-3.8-flash-tts</span> → 3.8-flash-lite-tts → 3.1-flash-tts-preview → browser speechSynthesis", "<code>generateContent</code> with an audio response",
+     "Prebuilt voice Kore, up to 3,000 characters a call, 24 kHz WAV back; only the words to be spoken are sent. Used only when Live cannot play the reply: a reply that arrives over HTTP while Live is open is read by the live voice (<code>lvRead</code>), so no TTS is spent."),
+]
+
+POC_ROWS = [
+    ("Understand a complaint (<code>ai.understand</code>; <code>/api/intake</code> step understand)", "<span class='m'>gemini-3.6-flash</span> → gemini-3.1-flash-lite (<code>POC_GEMINI_CHAIN</code>)", "Gemini's OpenAI-compatible <code>openai/chat/completions</code>",
+     "<code>reasoning_effort low</code>, temperature 0, max 900 tokens, <code>response_format json_schema</code> with <code>additionalProperties:false</code>. <code>service_id</code> is an enum of the 124 official service ids, so the model cannot name a service outside the masters. Also returns intent (GRIEVANCE / SERVICE_REQUEST / OUT_OF_SCOPE / WRONG_DOOR / UNCLEAR), grievance name, Sakala key, other department, confidence, reason, village, taluk, vulnerable flag and reason, English summary, language. The prompt carries the 5 most similar real grievances. Low effort took the call from 7.5 s to about 2.9 s; 3.8-flash adds prose in JSON mode, which is why 3.6 is used."),
+    ("Petition photo (<code>read_petition</code>)", "same chain", "same, vision through <code>image_url</code>", "Max 900 tokens, 60 s; fewer than 8 letters read = refused."),
+    ("Officer's ATR draft and ATR quality score (<code>draft_atr</code>, <code>check_atr</code>)", "same chain", "same", "Draft temperature 0.2, 300 tokens. Check returns a JSON score; a case closes only at 4 or more. <code>check_atr_local</code> is the heuristic fallback."),
+    ("AI mode, ask the data (<code>ai.ask</code>)", "same chain", "same", "A planner picks up to 3 of 5 typed tools (query_cases, real_records, record, sakala_2025, insights) with a fully declared argument schema; the tools run SQL; a writer turns rows into HTML, sanitised by <code>clean_html</code>; <code>guard_question</code> refuses overrides and off-topic questions. The chart is built from the rows by <code>api.build_chart</code>, never by the model."),
+    ("Kannada for officer messages (<code>to_kannada</code>), briefs (<code>brief</code>)", "same chain", "same", "Temperature 0.1."),
+    ("Voice notes and the AI-mode mic (<code>ai.transcribe</code>, <code>/api/transcribe</code>)", "<span class='m'>gemini-3.1-flash-lite</span> → gemini-3.6-flash (<code>POC_GEMINI_STT_CHAIN</code>)", "<code>generateContent</code> with <code>inline_data audio/wav</code>", "Kannada and English, 16 kHz WAV."),
+]
+
+DOC_ROWS = [
+    ("Orientation", "<span class='m'>gemini-3.1-flash-lite</span> and <span class='m'>gemini-3.6-flash</span>, two voters in parallel", "The four turns of the page on one labelled 2×2 sheet; 'which panel reads upright' with an A/B/C/D enum schema; the stronger model decides a tie. 12/12 on the gold letters at every rotation, about 3 s. PDFs skip it; a portrait photo is read at once with the check beside it."),
+    ("Three independent reads", "<span class='m'>gemini-3.6-flash</span> for all three", "In parallel on the upright page: a faithful transcript in the original script, the form fields with English, and a differently worded second extraction. A field is confirmed only when both extractions agree; a date far from today loses to the plausible reading. Thinking on, 90 s timeout each. 17/17 gold fields at about 6 s."),
+    ("Fallback chain for any call", "<code>GEMINI_MODEL</code> (gemini-3.8-flash) then <code>GEMINI_FALLBACK_MODEL</code>", "A lite model never thinks. The office gateway fallback was removed."),
+    ("Retrieval anchor", "none (SQL)", "A 6-digit iPGRS number in the letter is looked up in the 9,999 real records and handed to understanding as strong evidence; its place fills a place the letter does not name."),
+]
+
+LOCAL = [
+    ("Features", "TF-IDF on character n-grams 2 to 4, word-bounded, 60,000 features, sublinear tf, so it works on Kannada script and spelling variants"),
+    ("Classifiers", "Two linear SGD models (modified Huber loss, alpha 2e-5): 38 departments and 124 pilot services"),
+    ("Nearest neighbours", "Cosine similarity over 5,204 real pilot-department grievances; the 5 closest are evidence in every understanding prompt"),
+    ("Rules", "Wrong door (RTI…), out of scope (power, police…), Sakala service requests, vulnerability keywords; Kannada-to-Latin transliteration for village names with <code>KN_COMMON</code> so everyday nouns are never places"),
+    ("Training data", "The 9,999 masked iPGRS grievances (3 to 9 Oct 2026 sample)"),
+    ("Hold-out accuracy", "Department 71.4%, exact service 39.2%, top-3 service 43.4% (the real labels are noisy: a safety net, not the primary engine)"),
+    ("File", "<code>app/data/local_models.joblib</code>, 46 MB; loads only on the pinned scikit-learn 1.9.0 / numpy 1.26.4"),
+    ("Gate", "A complaint routes on its own only when the model's confidence clears the tuned threshold (0.55, <code>kv.low_conf</code>) and the offline model agrees; otherwise the scrutiny desk"),
+]
+
+PUB = [
+    ("gemini-3.8-live", "text, image, audio, video → text + audio", "131,072 / 65,536", "Function calling, Live API, native audio, interleaved thinking, search grounding; no structured output"),
+    ("gemini-3.8-flash", "text, image, video, audio, PDF → text", "1,048,576 / 65,536", "Stable Sep 2026; thinking low / medium / high; structured outputs and function calling"),
+    ("gemini-3.6-flash", "text, image, video, audio, PDF → text", "1,048,576 / 65,536", "The model Google routes deprecated 3.5-flash calls to; the POC's main model"),
+    ("gemini-3.5-flash-lite", "text, image, video, audio, PDF → text", "1,048,576 / 65,536", "Stable Jul 2026"),
+    ("gemini-3.1-flash-lite", "text, image, video, audio, PDF → text", "1,048,576 / 65,536", "Stable May 2026"),
+    ("gemini-3.8-flash-tts", "text → audio", "8,192 / 16,384", "Sep 2026; 130+ languages, detected automatically"),
+    ("gemini-3.8-flash-lite-tts", "text → audio", "8,192 / 16,384", "Sep 2026; 100+ languages incl. Kannada; built for low latency"),
+    ("gemini-3.1-flash-tts-preview", "text → audio", "8,192 / 16,384", "Legacy preview, Apr 2026; Google recommends moving off it"),
+]
+
+NOT_MODEL = [
+    ("Rules brain (<code>brain.py</code>)", "Regex rules for every intent in English and Kannada; the fast path and the last fallback"),
+    ("Question router (<code>tools.route_question</code>, <code>board.py</code>)", "Deterministic mapping of data questions to the ten typed functions with filters; the Chief Secretary's dashboards and the conversational scope"),
+    ("Data answers (<code>/api/query</code> in the POC)", "Fixed parameterised SQL over the 4,763-case caseload, the 9,999 iPGRS records and the Sakala 2025 reports; an officer's view scoped to their ladder"),
+    ("Officer routing (<code>routing.py</code>, <code>transfer.py</code>)", "Service → officer-role rules learned from the real data, the village → GP → taluk gazetteer, the <code>up_id</code> ladder; a return with a suggestion resolved against the officer master"),
+    ("Knowledge base (<code>knowledge.yaml</code>, <code>knowledge.py</code>)", "33 notes matched deterministically (phrases, keywords, question shape); an uncovered question gets 'not in my notes', never an invented fact"),
+    ("Guardrails (<code>guard.py</code>, <code>privacy.py</code>)", "Masking, vendor-name scrub, injection stripping, spoken number and id checks, fixed identity answer"),
+    ("Wake word", "Regex over the transcript (<code>main.wake_rx</code>) plus learned mishearings in <code>wake_variants.json</code>"),
+    ("Charts and map", "Canvas drawing in the browser, fed only by the numbers SQL returned"),
+    ("Not present anywhere", "No RAG pipeline, no embedding model, no vector database"),
+]
+
+
+def build() -> str:
+    h = [f"<!doctype html><html><head><meta charset='utf-8'><title>Sakala Mitra: Models and Specs</title><style>{CSS}</style></head><body>",
+         "<h1>Sakala Mitra: Models and Specs</h1>",
+         f"<p class='by'>{STAMP} · Thulasi Ram with Claude · replaces the 19 Oct 2026 edition · source of truth: <code>Mitra_RD_Handoff.md</code> section 3 and the code (<code>mitra/server/config.py</code>, <code>live.py</code>, <code>brain.py</code>, <code>speech.py</code>, <code>main.py</code>, <code>app/server/ai.py</code>, <code>docread.py</code>, <code>local_ai.py</code>)</p>",
+         "<p class='lead'>Sakala Mitra runs on Google Gemini only, since 23 Oct 2026: one live voice model for full-duplex conversation in English and Kannada, Gemini text and speech models for the step-by-step (cascade) path, and Gemini text models for every AI job inside the Sakala POC. The office H200 gateway (Qwen) is no longer called by anything. The browser's own speech engines, a rules brain and an offline classifier remain as fallbacks that need no network. No model ever produces a number on screen: every figure comes from SQL on the POC database.</p>",
+         "<h2>At a glance</h2>",
+         table(["#", "Model (exact id)", "Provider", "Job", "Status"], GLANCE, {0: "n", 1: "m"}),
+         "<div class='box'><b>What changed since the 19 Oct edition.</b> The gateway models (rows 9 to 11 then) are removed. The POC's understanding, petition reading, ATR draft and check, AI mode and officer-message translation moved from <code>qwen4-deploy</code> to <code>gemini-3.6-flash</code> through Gemini's OpenAI-compatible endpoint. Kannada moved from the cascade onto the live session (first word about 0.5 s instead of 7 to 10 s). The written-complaint reader (orientation voters + three parallel reads) and the knowledge base were added. A tenth data function, <code>dashboard</code>, was added. Measured accuracy on the Gemini chain is department 97.5%, service 72.5%, exact officer 77.5% (was 97.5 / 95 / 92.5 on the gateway).</div>",
+
+         "<h2>1 · Gemini Live: the conversation model</h2>",
+         "<p><span class='m'>gemini-3.8-live</span> carries every conversation on all three desks (Citizen, Officer, Chief Secretary), in English and in Kannada. It listens, understands, calls Mitra's functions and speaks the answer in one streaming session, so the person can interrupt at any time.</p>",
+         "<h3>Published specs (Google model page)</h3>", table(["Spec", "Value"], LIVE_SPECS),
+         "<h3>How Mitra uses it (<code>mitra/server/live.py</code>)</h3><ul>",
+         "<li><b>Transport:</b> browser ⇄ Mitra server (<code>/ws/live</code>) ⇄ Gemini Live WebSocket. The API key never reaches the browser.</li>",
+         "<li><b>Audio:</b> 16 kHz 16-bit mono PCM in, 24 kHz PCM out. Prebuilt voice Kore, temperature 0.6.</li>",
+         "<li><b>Turn-taking:</b> Google's voice activity detection, 700 ms of silence ends a turn, 200 ms prefix padding. Input and output transcription on: they drive the captions, the charts that build as Mitra speaks, and the number checks.</li>",
+         "<li><b>Setup per session:</b> a system instruction for the profile (the Kannada persona block first on a Kannada session; function arguments stay in English), the screen context, the last 6 turns, and the function list for that profile: every cascade intent plus the ten data functions (<code>case_info, find_cases, ipgrs_records, officer_profile, place_info, statewide_stats, sakala_2025, compare, ranking, dashboard</code>). Kannada sessions set <code>speechConfig.languageCode kn-IN</code>.</li>",
+         "<li><b>Function calls</b> run the same code as the cascade (<code>tools.execute</code> / <code>query.run</code>), so routing, permissions, notifications and real-time sync are identical on both paths. Gemini closes the tool-call turn before speaking the answer in the next one; the relay holds the exchange open. If nothing is said 4 s after a result the relay prompts once. If a data question ends with no function call, the server runs the deterministic router itself and pushes the picture.</li>",
+         "<li><b>Harness rules on the server</b> hold whatever the model does: a language switch asked in either language is applied at the end of the turn; a Kannada or English 'submit' on an open form files it even if no function was called; the relay reads the result itself.</li>",
+         "<li><b>Guardrails on its output:</b> function results sanitised and wrapped as data; vendor names scrubbed from captions; spoken numbers and ids checked against the function results, deviations logged; long Sakala numbers spoken as 'the application ending in 4811'.</li>",
+         "<li><b>Cost control:</b> the session opens only on the wake word, an orb tap or typing, and closes after 20 s of silence.</li>",
+         "<li><b>Failure:</b> on quota, network or model errors the browser uses the cascade for 5 minutes and the server marks Live down for 120 s.</li></ul>",
+         "<p><b>Measured:</b> session setup 1.3 s, first audio 0.45 s (Kannada about 0.5 s), function call 0.4 s, question to chart about 3 s. Real-Live batteries: English 32/32 and 11/11, Kannada live UI 18/18, language switching 8/8, document by voice 8/8, return with a suggestion 4/4.</p>",
+
+         "<h2>2 · Gemini text and speech models: the cascade</h2>",
+         "<p>The cascade handles typed input, the wake-word scanner, the first turn after a language switch, and every turn when Live is unavailable. It runs hear → decide → act → speak with one model chain per job. All calls go to <code>models/{model}:generateContent</code>. A 429 skips that model for 30 minutes, a 503 for 2 minutes, a 404 for good; when a whole chain is out the next engine in the row takes over. An English cascade turn takes 4 to 6 s end to end.</p>",
+         table(["Job", "Chain, in order", "Endpoint", "Settings in Mitra"], MITRA_ROWS),
+
+         "<h2>3 · Models inside the Sakala POC that Mitra calls</h2>",
+         "<p>Mitra does not classify complaints itself. When a citizen speaks a complaint, Mitra sends the masked words to the POC (<code>POST /api/intake</code>) and the POC's own pipeline picks the service and the officer. These models run behind Mitra on every filing, and behind the WhatsApp channel alike. Configuration: <code>POC_GEMINI_CHAIN</code> and <code>POC_GEMINI_STT_CHAIN</code> in <code>app/.env</code> (defaults shown).</p>",
+         table(["POC step", "Chain", "Endpoint", "Settings"], POC_ROWS),
+         "<p><b>Error handling (<code>ai.chat</code>):</b> a 429 or 5xx, a read timeout or a dropped connection moves to the next model of the chain; no network backs off for 60 s and the offline classifier answers. Every call is logged to <code>ai_log</code>. <b>API behaviours found:</b> the OpenAI-compatible endpoint supports <code>json_schema</code> with enums and <code>additionalProperties:false</code>, integer enums, vision <code>image_url</code> and <code>reasoning_effort</code>; it rejects <code>chat_template_kwargs</code>; an open <code>{\"type\":\"object\"}</code> comes back as <code>{}</code>, so every argument schema is declared in full.</p>",
+         "<p><b>Measured end to end</b> (Gemini 3.6 Flash + router, 40 real Mysuru complaints, text only, 24 Oct): department 97.5%, service 72.5%, exact officer 77.5%; about 2.9 s per understanding call. The officer router is rules learned from the data, not a model: it matches the real iPGRS officer in 97.6% of 673 Mysuru cases and 95.7% of 4,611 statewide.</p>",
+
+         "<h2>4 · The written-complaint reader (<code>app/server/docread.py</code>)</h2>",
+         "<p>A handwritten or typed letter (PDF, PNG, JPG; Kannada, English or mixed) is read into the official iPGRS form and then goes through the same pipeline. Added 19 to 21 Oct; not in the previous edition.</p>",
+         table(["Step", "Models", "How"], DOC_ROWS),
+         "<p><b>Measured:</b> 12 to 17 s from upload to the filled form with the officer preview on the three real handwritten letters (every field right, all three iPGRS numbers found); a repeat upload is instant by file hash. Accuracy was chosen over speed.</p>",
+
+         "<h2>5 · Offline classifier (<code>app/server/local_ai.py</code>)</h2>",
+         table(["Part", "Spec"], LOCAL),
+
+         "<h2>6 · Published specs of the Gemini models (Google model pages, 19 Oct 2026)</h2>",
+         table(["Model", "In → out", "Input / output tokens", "Notes"], PUB, {0: "m"}),
+
+         "<h2>7 · Browser speech: the last resort</h2>",
+         "<p><b>Speech recognition</b> (Web Speech API, <code>webkitSpeechRecognition</code>): a fast path for the wake word when its cloud service is reachable. Edge sends audio to Microsoft, Chrome and Brave to Google. On the office VPN that service is blocked, so Mitra switches it off and relies on the server-side scanner. <b>Speech synthesis</b> (<code>speechSynthesis</code>): the operating system's voices read Mitra's reply when every voice model has failed. Mitra does not choose or configure the model behind either.</p>",
+
+         "<h2>8 · What is not a model</h2>",
+         table(["Part", "What it is"], NOT_MODEL),
+
+         "<h2>9 · Keys, cost and open items</h2><ul>",
+         "<li><b>Gemini:</b> one API key from a prepaid Google AI Studio project, held on the server only (<code>app/.env</code> and <code>mitra/.env</code> on the laptop; <code>/opt/sakala/app/.env</code>, mode 600, on the server). Live is billed on audio tokens in and out, so sessions close after 20 s idle. The prepaid credits ran out once (17 Oct) and Mitra fell back cleanly until the top-up.</li>",
+         "<li><b>Configuration keys:</b> <code>GEMINI_API_KEY, GEMINI_MODEL, GEMINI_FALLBACK_MODEL, GEMINI_TTS_MODEL, GEMINI_VOICE, GEMINI_LIVE_MODEL</code>; optional <code>POC_GEMINI_CHAIN, POC_GEMINI_STT_CHAIN, GEMINI_BRAIN_CHAIN, GEMINI_STT_CHAIN, GEMINI_TTS_CHAIN</code>; <code>MITRA_BRAIN / MITRA_STT / MITRA_TTS</code> (auto, gemini, rules or browser).</li>",
+         "<li><b>Network:</b> outbound HTTPS and WSS to <code>generativelanguage.googleapis.com</code> and nothing else. No GPU anywhere; both services run on a 1 GB server.</li>",
+         "<li><b>Sarvam:</b> no key; its models are never called.</li></ul>",
+         "<h3>Open items</h3><ol>",
+         "<li>Replace <code>gemini-3.5-flash</code> in the brain chain: deprecated, Google routes it to <code>gemini-3.6-flash</code>.</li>",
+         "<li>Drop <code>gemini-3.1-flash-tts-preview</code> from the voice chain (legacy preview).</li>",
+         "<li>Service accuracy fell from 95% to 72.5% with the move to Gemini 3.6 Flash; the router is unchanged. A prompt and evaluation pass is due.</li>",
+         "<li>A single Live setup failure parks Live for 120 s on the server and 5 minutes in the client; a retry before falling back was proposed and not built.</li>",
+         "<li>The sovereign replacement of every model above is a plan (<code>Mitra Sovereign Duplex.md</code>), not a change to this document.</li></ol>",
+         "<p class='small'><b>Sources:</b> Google Gemini API model pages, opened 19 Oct 2026, for the published specs; everything else from the Mitra and POC code and the project's test runs on 24 Oct 2026.</p>",
+         "</body></html>"]
+    return "".join(h)
+
+
+async def pdf(html_path: Path, out: Path):
+    from cdp import Browser
+    async with Browser(port=9498, size=(1240, 1754)) as b:
+        await b.goto(html_path.resolve().as_uri(), 2)
+        r = await b.cmd("Page.printToPDF", printBackground=True, preferCSSPageSize=True)
+        out.write_bytes(base64.b64decode(r["data"]))
+
+
+def main():
+    out = ROOT / "Sakala_Mitra_Models_and_Specs.pdf"
+    if out.exists():
+        bk = ROOT / "tools" / "backups" / "Sakala_Mitra_Models_and_Specs_19Oct2026.pdf"
+        bk.parent.mkdir(exist_ok=True)
+        if not bk.exists():
+            shutil.copy2(out, bk)
+    hp = ROOT / "tools" / "models_specs.html"
+    hp.write_text(build(), encoding="utf-8")
+    asyncio.run(pdf(hp, out))
+    print("wrote", out, out.stat().st_size, "bytes")
+
+
+if __name__ == "__main__":
+    main()

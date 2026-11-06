@@ -1,0 +1,17 @@
+[Unit]
+Description=Sakala WhatsApp POC (port 8020, localhost only; Caddy serves it over HTTPS)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=sakala
+WorkingDirectory=/opt/sakala/app
+EnvironmentFile=/opt/sakala/app/.env
+Environment=PYTHONIOENCODING=utf-8
+ExecStart=/opt/sakala/venv/bin/python -m uvicorn server.api:app --host 127.0.0.1 --port 8020 --proxy-headers --forwarded-allow-ips 127.0.0.1
+Restart=always
+RestartSec=3
+MemoryHigh=500M
+
+[Install]
+WantedBy=multi-user.target

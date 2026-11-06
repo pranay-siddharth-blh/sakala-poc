@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Mitra: the voice agent's particle orb (emerald / cyan / saffron) on an ink tile. Drawn for the launcher icon. -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#14202a"/><stop offset="1" stop-color="#05070b"/></radialGradient>
+    <radialGradient id="core" cx="42%" cy="38%" r="62%"><stop offset="0" stop-color="#eafff6"/><stop offset=".28" stop-color="#5ef0b4"/><stop offset=".62" stop-color="#16c784"/><stop offset="1" stop-color="#0a5a44"/></radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset=".55" stop-color="#16c784" stop-opacity=".45"/><stop offset="1" stop-color="#16c784" stop-opacity="0"/></radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#36d6ff"/><stop offset=".55" stop-color="#16c784"/><stop offset="1" stop-color="#ff8a3d"/></linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="58" fill="url(#bg)"/>
+  <circle cx="128" cy="128" r="104" fill="url(#glow)"/>
+  <ellipse cx="128" cy="128" rx="94" ry="34" fill="none" stroke="url(#ring)" stroke-width="5" transform="rotate(-24 128 128)" opacity=".9"/>
+  <circle cx="128" cy="128" r="62" fill="url(#core)"/>
+  <g fill="#ffffff" opacity=".85">
+    <circle cx="104" cy="104" r="4.2"/><circle cx="124" cy="94" r="3.4"/><circle cx="145" cy="99" r="3"/><circle cx="96" cy="126" r="3.2"/>
+    <circle cx="116" cy="117" r="2.6"/><circle cx="138" cy="114" r="2.4"/><circle cx="158" cy="122" r="2.6"/><circle cx="108" cy="146" r="2.4"/>
+    <circle cx="129" cy="136" r="2.2"/><circle cx="150" cy="142" r="2.4"/><circle cx="121" cy="160" r="2"/><circle cx="142" cy="162" r="1.9"/>
+  </g>
+  <ellipse cx="128" cy="128" rx="94" ry="34" fill="none" stroke="url(#ring)" stroke-width="5" transform="rotate(-24 128 128)"
+           stroke-dasharray="150 330" stroke-dashoffset="-40"/>
+  <circle cx="213" cy="92" r="9" fill="#ff8a3d"/>
+  <circle cx="44" cy="166" r="6" fill="#36d6ff"/>
+</svg>

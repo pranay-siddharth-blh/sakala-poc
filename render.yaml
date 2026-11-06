@@ -1,0 +1,41 @@
+# Render Blueprint: Sakala Mitra (primary) + the Sakala POC (its data and pipeline), two separate web services.
+# New > Blueprint > pick this repo. Then set GEMINI_API_KEY (and, if Mitra's pages are on Vercel, the two MITRA_* values).
+services:
+  - type: web
+    name: sakala-mitra
+    runtime: python
+    rootDir: mitra
+    plan: starter
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start.sh
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SAKALA_URL                  # the POC, over Render's private network (host:port)
+        fromService:
+          type: web
+          name: sakala-poc
+          property: hostport
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MITRA_RETAIN_DAYS
+        value: "7"
+      - key: MITRA_PUBLIC_BACKEND        # only when the pages are on Vercel: this service's https URL
+        sync: false
+      - key: MITRA_CORS_ORIGINS          # only when the pages are on Vercel: the Vercel URL(s), comma separated
+        sync: false
+
+  - type: web
+    name: sakala-poc
+    runtime: python
+    rootDir: app
+    plan: starter
+    region: singapore
+    buildCommand: pip install -r requirements-deploy.txt
+    startCommand: bash start.sh
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9

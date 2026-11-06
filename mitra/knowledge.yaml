@@ -1,0 +1,394 @@
+# Mitra's knowledge base (22 Oct 2026). General questions ("what is Sakala?", "who is the Chief Secretary?") are answered
+# from HERE and only from here, through the ask_knowledge function, on the live voice and the cascade alike. The model never
+# answers such questions from its own memory. Every fact below was verified for the POC (see CLAUDE.md section 4); the
+# assumptions are marked as such in the text itself.
+#
+# Fields: id · topic (the card title) · ask (ways people ask: phrases matched inside the question; also plain keywords) ·
+# say (the spoken answer, one to three short sentences, numbers as digits) · more (detail for a follow-up) · source · related.
+
+- id: sakala
+  topic: Sakala
+  ask: [what is sakala, sakala means, sakala act, tell me about sakala, explain sakala, sakala scheme, sakala services, what does sakala do, sakala guarantee]
+  keys: [sakala]
+  say: >-
+    Sakala is Karnataka's guarantee of government services within a fixed time. The Sakala Services Act of 2011, in force
+    since 2 April 2012, covers 1,446 services of 114 departments, and if a service is late the citizen is paid compensation.
+  more: >-
+    The Act was originally named the Karnataka Guarantee of Services to Citizens Act, which is why every acknowledgment is a
+    GSC number. The portal has handled about 43 crore receipts. New applications go through Seva Sindhu or the department
+    portals; Sakala tracks them and handles appeals. The tagline is "No more delays, we deliver on time".
+  source: sakala.kar.nic.in (Act 1 of 2012, Rules 2012)
+  related: [sakala_compensation, sakala_appeal, sakala_helpline, grievance_vs_sakala]
+
+- id: sakala_compensation
+  topic: Sakala compensation
+  ask: [compensation, compensatory cost, how much compensation, 20 rupees, twenty rupees, 500 rupees, who pays the compensation, penalty for delay, cost of delay, section 9, section 11, form c, debit note, hrms debit]
+  keys: [compensation, penalty, rupees, debit]
+  say: >-
+    Under section 9 of the Sakala Act a late service earns the citizen 20 rupees for every day of delay, capped at 500 rupees
+    per application. Under section 11 the Competent Officer recovers that cost from the officer at fault.
+  more: >-
+    The recovery goes through a notice in Form C, with 7 days for the officer to reply; since the 2014 amendment the HRMS debit
+    note is posted within 30 days. Compensation is paid from the office imprest first and recovered afterwards. It applies only
+    to Sakala applications, never to iPGRS grievances, and in this POC the HRMS step is a mock that always needs a human approval.
+  source: Sakala Act s.9, s.11(4); Sakala Rules 2012
+  related: [sakala_appeal, sakala_rules, grievance_vs_sakala]
+
+- id: sakala_appeal
+  topic: Appeals under Sakala
+  ask: [appeal, first appeal, second appeal, appellate authority, competent officer, designated officer, how do i appeal, appeal within, section 13, seven defaults, 7 defaults, enquiry against the officer, section 14]
+  keys: [appeal, appellate]
+  say: >-
+    A Sakala application has three officers: the Designated Officer who delivers it, the Competent Officer for the first appeal
+    within 30 days, and the Appellate Authority for the second appeal within 60 days. An officer with more than 7 defaults faces an enquiry.
+  more: >-
+    Section 13 sets the two appeal windows; section 14(4) sets the enquiry after 7 defaults. In the pilot the Designated Officer
+    is the Tahsildar or Food Inspector, the Competent Officer the Assistant Commissioner or the Deputy Director of Food, and the
+    Appellate Authority the Deputy Commissioner. This ladder is never mixed with the grievance ladder of iPGRS.
+  source: Sakala Act s.13, s.14(4)
+  related: [sakala_compensation, escalation, grievance_vs_sakala]
+
+- id: sakala_rules
+  topic: Sakala Rules 2012
+  ask: [sakala rules, when does the clock start, incomplete application, public holidays, holidays excluded, form e-4, form e4, show cause notice, imprest]
+  keys: [rules, clock, holidays, imprest, e-4]
+  say: >-
+    Under the Sakala Rules an incomplete application gets no delivery date; the clock starts only when it is complete. Public
+    holidays are excluded, compensation is paid from imprest and then recovered, and Form E-4 is the show-cause notice to a defaulting officer.
+  more: >-
+    In this POC the Wednesday pack lists officers with more than 7 overdue cases as Form E-4 candidates.
+  source: Sakala Rules 2012
+  related: [sakala_compensation, wednesday_review]
+
+- id: sakala_amendment_2026
+  topic: Sakala Amendment Bill 2026
+  ask: [amendment, 2026 amendment, amendment bill, bill 28, section 13-a, section 13a, section 13-b, vexatious, revision of appeal orders, changes to the act]
+  keys: [amendment, vexatious]
+  say: >-
+    The Sakala Amendment Bill of 2026, Bill 28, passed the Legislative Assembly on 27 August 2026. It adds section 13-A, letting
+    the government revise appeal orders, and section 13-B, a cost on vexatious complainants. Council passage and assent are not confirmed yet.
+  source: Karnataka LA Bill 28/2026
+  related: [sakala, sakala_appeal]
+
+- id: sakala_helpline
+  topic: Sakala helpline
+  ask: [sakala helpline, sakala call centre, sakala call center, sakala phone number, sakala number, call sakala, number for sakala, call for sakala, 4455, 080]
+  keys: [helpline, 4455, call]
+  say: >-
+    The Sakala call centre is 080 4455 4455. For a grievance on iPGRS the helpline is 1902.
+  source: sakala.kar.nic.in; ipgrs.karnataka.gov.in
+  related: [ipgrs_helpline, channels]
+
+- id: gsc
+  topic: GSC number
+  ask: [gsc number, gsc, what is a gsc, acknowledgment number, acknowledgement number, sakala number, application number, sk number]
+  keys: [gsc, acknowledgment]
+  say: >-
+    A GSC number is the Sakala acknowledgment of an application. GSC stands for Guarantee of Services to Citizens, the Act's
+    original name, and the number lets anyone track the application and its legal deadline.
+  more: >-
+    The format is two or three letters, three digits, a letter and nine or ten digits. If a citizen quotes one in a grievance,
+    Mitra links the grievance to that application and can tell a payment problem apart from a Sakala delay.
+  source: Sakala portal
+  related: [sakala, grievance_vs_sakala]
+
+- id: ipgrs
+  topic: iPGRS
+  ask: [what is ipgrs, ipgrs, i p g r s, janaspandana, jana spandana, public grievance redressal, grievance portal, grievance system, pgrs]
+  keys: [ipgrs, janaspandana]
+  say: >-
+    iPGRS is Karnataka's Integrated Public Grievance Redressal System, also called Janaspandana. It has been live since
+    1 November 2021, takes a grievance from any channel and sends it to the field officer responsible for that place.
+  more: >-
+    It was set up under a High Court order of 2017 and a DPAR government order. The content is owned by the Centre for
+    e-Governance and the system was built by the Centre for Smart Governance, hosted at the State Data Centre. Its State Level
+    Review Committee is chaired by the Chief Secretary. The helpline is 1902. iPGRS 2.0 was announced in June 2026.
+  source: negd.gov.in state directory 407 and 418; ipgrs.karnataka.gov.in
+  related: [ipgrs_routing, ipgrs_exclusions, ipgrs_helpline, grievance_vs_sakala]
+
+- id: ipgrs_helpline
+  topic: iPGRS helpline
+  ask: [1902, grievance helpline, ipgrs helpline, ipgrs number, complaint helpline, whom do i call for a complaint]
+  keys: [helpline, 1902]
+  say: >-
+    The iPGRS grievance helpline is 1902. The Sakala call centre for applications is 080 4455 4455.
+  source: ipgrs.karnataka.gov.in
+  related: [sakala_helpline, channels]
+
+- id: ipgrs_routing
+  topic: How a grievance moves in iPGRS
+  ask: [how does ipgrs route, how is a grievance escalated, escalated in ipgrs, grievance escalated, lmf, last mile functionary, l1 l2 l3, levels in ipgrs, who gets the grievance, who handles a grievance, action taken report, what is an atr, atr, escalate a grievance, how many times can i escalate]
+  keys: [lmf, atr, route, levels, escalate]
+  say: >-
+    A grievance goes first to the Last Mile Functionary, the L1 field officer for that place, then up to L2 and L3 if it is
+    not resolved. About 17,000 of these officers are mapped down to Gram Panchayat level. An Action Taken Report is mandatory
+    before a case closes, and the citizen can escalate twice.
+  more: >-
+    A General or PrajaSeva Request, unlike a grievance, goes to a Secretary or head of department. The per-level day limits are
+    not public; a 2023 Chief Minister's directive mentioned 15 days. The iPGRS form has 6 mandatory dropdowns, a 750-character
+    description and the pin code. In this POC the demo clock uses 7, 5 and 3 days for the three levels, which is an assumption.
+  source: negd.gov.in state directory 407; iPGRS portal
+  related: [escalation, routing_how, scrutiny_desk]
+
+- id: ipgrs_exclusions
+  topic: What iPGRS does not take
+  ask: [what is not a grievance, excluded topics, rti, right to information, sub judice, court case, suggestions, employee service matters, religious matters, wrong door]
+  keys: [rti, sub-judice, excluded, suggestion]
+  say: >-
+    iPGRS does not take RTI requests, matters that are in court, religious matters, suggestions, or government employees'
+    own service matters. Mitra tells the person the right door instead of filing those.
+  source: iPGRS portal
+  related: [ipgrs, routing_how]
+
+- id: praja_seva
+  topic: Praja Seva Department
+  ask: [what is praja seva, praja seva, prajaseva, praja seva department, prajaseva department, new department, harsha gupta, principal secretary]
+  keys: [praja, seva, harsha]
+  say: >-
+    The Praja Seva Department is Karnataka's new department for citizen services, approved by the cabinet on 20 June 2026.
+    It merges the Sakala Mission, Public Grievances and Administrative Reforms. Its Principal Secretary is Harsha Gupta, posted on 3 July 2026.
+  more: >-
+    It runs the Praja Seva Abhiyana camps and the Wednesday grievance reviews, and on 11 September 2026 the government said it
+    is deploying AI routing of grievances because citizens and operators often choose the wrong category. This POC is that routing.
+  source: Government of Karnataka announcements, June to September 2026
+  related: [praja_seva_abhiyana, wednesday_review, chief_secretary]
+
+- id: praja_seva_abhiyana
+  topic: Praja Seva Abhiyana
+  ask: [praja seva abhiyana, abhiyana, saturday camps, camps, kudligi, grama one, karnataka one, where can i give my petition]
+  keys: [abhiyana, camp, kudligi]
+  say: >-
+    Praja Seva Abhiyana is the Saturday grievance camp programme, launched on 5 September 2026 at Kudligi. Petitions given at
+    the camps are digitised at the Grama One and Karnataka One counters and enter the same grievance system.
+  more: >-
+    In the real sample week, 41 percent of all grievances came through the Abhiyana camps, 24 percent through CSC centres,
+    19 percent on the iPGRS website, 9 percent from the mobile app and 6 percent from the call centres.
+  source: Government of Karnataka, September 2026; iPGRS sample data 3 to 9 October 2026
+  related: [praja_seva, channels]
+
+- id: wednesday_review
+  topic: Wednesday review
+  ask: [wednesday review, wednesday meeting, wednesday pack, review meeting, weekly review, who reviews grievances, review timings]
+  keys: [wednesday, review]
+  say: >-
+    Every Wednesday the grievances are reviewed level by level: Tahsildars and Executive Officers from 9 to 11, Assistant
+    Commissioners from 11 to 1, and Deputy Commissioners from 3 to 5. Mitra can read the Wednesday pack for any of those levels.
+  source: Praja Seva Department review schedule
+  related: [praja_seva, sakala_rules]
+
+- id: chief_secretary
+  topic: Chief Secretary of Karnataka
+  ask: [who is the chief secretary, chief secretary name, chief secretary of karnataka, shalini rajneesh, who is madam, name of the chief secretary, cs of karnataka, who is the cs]
+  keys: [chief, secretary, shalini, rajneesh, madam]
+  say: >-
+    The Chief Secretary of Karnataka is Shalini Rajneesh, the senior-most civil servant of the state. She chairs the State
+    Level Review Committee that oversees iPGRS, and on this system her screen is the leadership view of every grievance in Karnataka.
+  source: Government of Karnataka
+  related: [praja_seva, cs_desk, cm]
+
+- id: cm
+  topic: Chief Minister and ministers
+  ask: [who is the chief minister, chief minister, cm of karnataka, shivakumar, d k shivakumar, dk shivakumar, who is the minister, e-governance minister, egov minister, priyank kharge, it minister]
+  keys: [minister, shivakumar, kharge]
+  say: >-
+    The Chief Minister of Karnataka is D. K. Shivakumar, in office since 3 June 2026. The Minister for Electronics, IT and
+    e-Governance is Priyank Kharge.
+  source: Government of Karnataka
+  related: [chief_secretary, praja_seva]
+
+- id: sakala_2025_performance
+  topic: Sakala performance in 2025
+  ask: [sakala performance, 2025 performance, how did sakala do in 2025, late delivery, late percentage, rejected percentage, worst district, best district, bengaluru urban, kalaburagi, overdue in 2025, performance report]
+  keys: [performance, 2025, late, rejected]
+  data_ok: true
+  say: >-
+    In 2025 Sakala handled 35.2 million receipts statewide. 4.45 percent were delivered late and 7.42 percent were rejected.
+    Overdue applications fell from 51,172 in January to 19,129 in December, a drop of 63 percent. Bengaluru Urban was the
+    worst district at 9.18 percent late, Kalaburagi the best at 1.9 percent, and Mysuru stood at 5.46 percent.
+  more: >-
+    The official ranking barely separates the districts, with scores between 61 and 79, which is why this POC proposes a fairer
+    scorecard. The three 2025 report files the team received are numerically identical and cover all departments together;
+    department-wise exports still have to be requested from Sakala.
+  source: Sakala district performance reports, 2025
+  related: [sakala, cs_desk]
+
+- id: mitra_what
+  topic: What Mitra is
+  ask: [what is mitra, what can you do, what do you do, what are you for, how can you help, what is this system, mitra means, what does mitra mean, who is mitra]
+  keys: [mitra, help, do]
+  say: >-
+    I am Mitra, which means friend. I am the voice of Karnataka's grievance system: a citizen tells me a problem in English or
+    Kannada and I file it, find the exact officer for that village and keep track of it. An officer can clear an inbox with me,
+    and the Chief Secretary can ask me anything about the state's grievances.
+  more: >-
+    Say "Hey Mitra" to wake me, or just talk. I never guess: every number comes from the records, every officer from the official
+    masters, and unclear requests go to a human scrutiny desk.
+  source: Sakala AI POC
+  related: [mitra_pipeline, routing_how, privacy]
+
+- id: mitra_pipeline
+  topic: The 8-stage pipeline
+  ask: [how does it work, how does the pipeline work, 8 stages, eight stages, the pipeline, what happens to my complaint, what happens after i complain, behind the chat, behind your words, stages]
+  keys: [pipeline, stages, works]
+  say: >-
+    A request goes through 8 stages: it enters from any channel, personal numbers are masked, the AI understands it against the
+    official masters, a completion step asks only for what is missing, the place is validated and the citizen confirms, it is
+    routed to the exact officer, the deadlines and reminders start, and it is live on the officer's and the Chief Secretary's screens.
+  source: Sakala AI POC design
+  related: [routing_how, privacy, escalation]
+
+- id: routing_how
+  topic: How routing works
+  ask: [how do you decide the officer, how is it routed, how do you route, how does the routing work, how does routing work, exact officer, which officer gets it, routing accuracy, how accurate, accuracy, routing agreement, 97 percent, who decides the category, wrong category]
+  keys: [routing, officer, accurate, accuracy, category]
+  say: >-
+    I pick the department, service and grievance type only from the official masters, then the village leads to its Gram
+    Panchayat and to the named officer responsible there. The rules were learned from the real records, and given the right
+    service and place the router picks the same officer iPGRS used in 97.6 percent of 673 real Mysuru cases.
+  more: >-
+    On the text alone, 40 real complaints were routed with 97.5 percent department accuracy, 95 percent service accuracy and
+    92.5 percent exact-officer accuracy. Every decision keeps its evidence in the case file, and anything below the confidence
+    threshold goes to a human scrutiny desk instead of being guessed.
+  source: Sakala AI POC routing evaluation
+  related: [scrutiny_desk, masters, pilot]
+
+- id: scrutiny_desk
+  topic: The scrutiny desk
+  ask: [scrutiny desk, scrutiny, what if you are not sure, low confidence, unclear complaint, human check, who checks]
+  keys: [scrutiny, unsure, unclear]
+  say: >-
+    When I am not sure which office a request belongs to, I do not guess. It goes to the scrutiny desk, a person at the Taluk
+    Panchayat Executive Officer's office, who routes it to the right officer. The citizen is told the reference either way.
+  source: Sakala AI POC guardrails
+  related: [routing_how, ipgrs_routing]
+
+- id: masters
+  topic: Official masters
+  ask: [official masters, masters, what categories, how many departments, how many services, line departments, grievance types, master data]
+  keys: [masters, departments, services, categories]
+  data_ok: true
+  say: >-
+    The real sample week holds 38 departments, 195 line departments, 703 services and 838 grievance types. For the pilot the
+    AI chooses only among the 124 services and 221 grievance types of the three pilot departments, never a category of its own.
+  source: iPGRS sample data, 3 to 9 October 2026
+  related: [routing_how, pilot]
+
+- id: pilot
+  topic: The pilot
+  ask: [pilot district, pilot districts, which districts does the pilot cover, pilot, which taluks, which departments are covered, three departments, pilot departments, mysuru, piriyapatna, hunsur, scope of the poc, what does the poc cover]
+  keys: [pilot, taluk, mysuru, piriyapatna, hunsur, covered]
+  say: >-
+    The pilot covers three departments, Revenue, Rural Development and Panchayat Raj, and Food and Civil Supplies, in Mysuru
+    district, with the taluks of Piriyapatna, Hunsur and Mysuru. The data and the officer master behind me cover the whole state,
+    31 districts and 224 taluks.
+  source: Sakala AI POC scope
+  related: [masters, routing_how, officer_ladder]
+
+- id: officer_ladder
+  topic: Officers and their seniors
+  ask: [who is above the tahsildar, who is above the pdo, hierarchy, officer hierarchy, ladder, who is the senior, chain of officers, who is the l2, who is the l3, tahsildar, pdo, executive officer, zp ceo, deputy commissioner, assistant commissioner]
+  keys: [hierarchy, ladder, senior, above, tahsildar, pdo]
+  say: >-
+    For Revenue the ladder is Tahsildar, then the Assistant Commissioner, then the Deputy Commissioner. For Rural Development it
+    is the PDO, engineer or water engineer, then the Taluk Panchayat Executive Officer, then the Zilla Panchayat CEO. For Food it
+    is the Food Inspector, the Deputy Director of Food and the Deputy Commissioner.
+  more: >-
+    Survey matters go from the Assistant Director of Land Records to the Deputy Director and the Deputy Commissioner. A
+    grievance that is not acted on moves up this ladder by itself.
+  source: iPGRS officer master, Mysuru
+  related: [escalation, pilot, ipgrs_routing]
+
+- id: escalation
+  topic: Escalation and deadlines
+  ask: [escalation, how many days does the officer have, deadline, deadlines, what if the officer does nothing, officer does nothing, nobody acts, no action is taken, what happens if nothing happens, auto escalation, automatic escalation, reminders, how long does the officer, time limit, days to act]
+  keys: [escalation, deadline, days, reminder]
+  say: >-
+    Every case has a clock. In this demo an L1 officer gets 7 days, L2 gets 5 and L3 gets 3, which is an assumption because the
+    real per-level limits are not public. Reminders go out before the deadline, and if nothing happens the case moves up to the senior by itself.
+  more: >-
+    If a citizen says a resolved problem is not actually solved, the case re-opens and climbs one rung with a fresh clock. Sakala
+    applications follow their own legal clock, for example 21 days for a caste certificate, with compensation when it is breached.
+  source: Sakala AI POC (SLA days assumed); iPGRS
+  related: [ipgrs_routing, officer_ladder, sakala_compensation]
+
+- id: grievance_vs_sakala
+  topic: Grievance versus Sakala application
+  ask: [difference between grievance and sakala, grievance or application, is my complaint a sakala matter, sakala or ipgrs, what is the difference, two ladders]
+  keys: [difference, versus, grievance, application]
+  say: >-
+    A grievance is a complaint that something is wrong, like no water or a broken street light; it goes to the field officer
+    through iPGRS. A Sakala application asks for a service, like a caste certificate or a ration card; it has a legal deadline
+    and compensation for delay. The two ladders are kept apart and never mixed.
+  source: Sakala Act; iPGRS
+  related: [sakala, ipgrs, sakala_appeal]
+
+- id: privacy
+  topic: Privacy
+  ask: [privacy, is my data safe, is my number safe, my phone number safe, personal data, do you store my phone number, do you keep my number, masking, masked, aadhaar, what happens to my number, data protection, confidential]
+  keys: [privacy, safe, masked, aadhaar, personal, confidential]
+  say: >-
+    Phone numbers, Aadhaar numbers, emails and card numbers are masked before anything reaches the AI, and the case file keeps
+    only the masked text. Each conversation is kept for 7 days unless you ask me to forget it.
+  source: Sakala AI POC privacy shield
+  related: [mitra_pipeline, mitra_what]
+
+- id: document_upload
+  topic: Written complaints
+  ask: [can i upload a letter, written complaint, handwritten letter, upload a pdf, photo of my letter, can you read a letter, paper petition, scan]
+  keys: [letter, upload, pdf, handwritten, petition]
+  say: >-
+    Yes. Give me a PDF or a photo of the letter, handwritten or typed, in Kannada or English, and I read it into the official
+    iPGRS form for you to check. Then it goes to the exact officer like any spoken request.
+  source: Sakala AI POC document door
+  related: [mitra_pipeline, channels]
+
+- id: kannada
+  topic: Kannada
+  ask: [do you speak kannada, kannada, can i talk in kannada, languages, which languages, english or kannada]
+  keys: [kannada, language]
+  say: >-
+    Yes, you can speak to me in Kannada or English. Say "Kannada" and I switch; the officer still sees the official English
+    category, and my replies to you come in Kannada.
+  source: Sakala AI POC
+  related: [mitra_what]
+
+- id: channels
+  topic: Ways to reach the system
+  ask: [how can i complain, where do i complain, channels, whatsapp, can i use whatsapp, call centre, mobile app, csc, how to file a grievance, how to register a complaint]
+  keys: [whatsapp, channel, complain, register]
+  say: >-
+    A grievance can come in through WhatsApp, the 1902 call centre, the Praja Seva Saturday camps, a CSC or Grama One counter,
+    the mobile app, a written letter, or simply by talking to me. Every channel enters the same pipeline and reaches the same officer.
+  source: Sakala AI POC; iPGRS
+  related: [praja_seva_abhiyana, ipgrs_helpline, document_upload]
+
+- id: seva_sindhu
+  topic: Seva Sindhu
+  ask: [seva sindhu, sevasindhu, where do i apply, where can i apply, how do i apply, how to apply, apply online, apply for a certificate, apply for a caste certificate, apply for a ration card, apply for a pension, where to apply]
+  keys: [seva, sindhu, apply]
+  say: >-
+    New applications for government services go through Seva Sindhu or the department's own portal; Sakala tracks each one and
+    handles the appeals. For a caste or income certificate, a pension or a ration card you can also just tell me, and I start the application.
+  source: Sakala portal
+  related: [sakala, gsc]
+
+- id: cs_desk
+  topic: The Chief Secretary's view
+  ask: [what can the chief secretary see, leadership view, dashboard, what does madam see, command dashboard, chief secretary screen]
+  keys: [dashboard, leadership, view]
+  say: >-
+    The Chief Secretary's screen shows every grievance in the state live on the Karnataka map, the overdue and escalated cases,
+    the officers who need attention, the Sakala 2025 district performance, and the Wednesday pack. She can ask me any question
+    about the data in plain words, or nudge an officer by voice.
+  source: Sakala AI POC
+  related: [chief_secretary, wednesday_review, sakala_2025_performance]
+
+- id: ai_routing_news
+  topic: AI routing in Karnataka
+  ask: [why ai, why artificial intelligence, using ai, ai routing, government and ai, ipgrs 2.0, ipgrs two, what is new in ipgrs, why this system]
+  keys: [ai, artificial, intelligence]
+  say: >-
+    On 11 September 2026 the Government of Karnataka said it is deploying AI routing of grievances, because citizens and
+    operators often pick the wrong category and the complaint lands on the wrong desk. iPGRS 2.0 was announced in June 2026. This system is that idea working.
+  source: Government of Karnataka, 2026
+  related: [routing_how, praja_seva, ipgrs]

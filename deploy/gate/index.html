@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mitra · Access</title>
+<style>
+  :root { --bg:#f3f5f9; --card:#ffffff; --tx:#0b0b0c; --mute:#5b6472; --line:#e3e7ee; --a:#0e9f6e; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#06080c; --card:#10141b; --tx:#f5f6f8; --mute:#8b95a5; --line:#222a35; --a:#16c784; } }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--tx); font-family:"Segoe UI",system-ui,-apple-system,sans-serif; }
+  .wrap { min-height:100%; display:grid; place-items:center; padding:16px; }
+  .card { width:100%; max-width:380px; background:var(--card); border:1px solid var(--line); border-radius:22px; padding:32px 26px;
+          box-shadow:0 20px 60px rgba(0,0,0,.12); text-align:center; }
+  .dot { width:64px; height:64px; margin:0 auto 18px; border-radius:50%;
+         background:radial-gradient(circle at 38% 34%, #eafff6, #5ef0b4 30%, var(--a) 62%, #0a5a44); box-shadow:0 0 40px rgba(22,199,132,.45); }
+  h1 { margin:0 0 6px; font-size:24px; font-weight:800; }
+  p { margin:0 0 22px; color:var(--mute); font-size:14px; line-height:1.5; }
+  input { width:100%; padding:14px 16px; border-radius:14px; border:1px solid var(--line); background:transparent; color:var(--tx);
+          font-size:17px; letter-spacing:2px; text-align:center; outline:none; }
+  input:focus { border-color:var(--a); box-shadow:0 0 0 3px rgba(22,199,132,.2); }
+  button { width:100%; margin-top:12px; padding:14px; border:0; border-radius:14px; background:var(--tx); color:var(--bg);
+           font-size:15px; font-weight:700; cursor:pointer; }
+  .err { color:#e5484d; font-size:13px; min-height:18px; margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="wrap"><form class="card" method="get" action="/__access" autocomplete="off">
+  <div class="dot"></div>
+  <h1>Mitra</h1>
+  <p>Government of Karnataka · Praja Seva Department<br>Enter the access code you were given.</p>
+  <input name="code" type="password" inputmode="text" autofocus required aria-label="Access code" placeholder="Access code">
+  <button type="submit">Open</button>
+  <div class="err" id="err"></div>
+</form></div>
+<script>
+  if (location.pathname === '/__access') document.getElementById('err').textContent = 'That code is not right. Please try again.';
+</script>
+</body>
+</html>

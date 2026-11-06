@@ -1,0 +1,32 @@
+# HTTPS for the two apps (free Let's Encrypt certificates on sslip.io names) with a simple access-code gate.
+# deploy.sh renders this on the server: __CODE__ = the access code people type, __TOKEN__ = a random cookie value.
+# Neither value is stored in the project. The apps themselves listen on 127.0.0.1 only.
+(gate) {
+	# the right code once: a year-long cookie for this browser, then on to the app
+	@login {
+		path /__access
+		query code=__CODE__
+	}
+	header @login Set-Cookie "sakala_access=__TOKEN__; Path=/; Max-Age=31536000; Secure; HttpOnly; SameSite=Lax"
+	redir @login / 302
+
+	# no cookie: the access page (a wrong code lands here too)
+	@locked not header Cookie *sakala_access=__TOKEN__*
+	handle @locked {
+		root * /opt/sakala/gate
+		rewrite * /index.html
+		file_server
+	}
+}
+
+mitra.__HOST__ {
+	encode gzip
+	import gate
+	reverse_proxy 127.0.0.1:8030
+}
+
+poc.__HOST__ {
+	encode gzip
+	import gate
+	reverse_proxy 127.0.0.1:8020
+}

@@ -1,0 +1,18 @@
+# secrets: keys live in Render / Vercel settings, never in git
+.env
+**/.env
+# runtime data (the POC starts from data/sakala_pristine.db; Mitra creates its own database)
+app/data/sakala.db
+app/data/sakala.db-*
+app/data/*.log
+mitra/data/
+mitra/web/config.js
+mitra/web/dbg.html
+mitra/web/shot.html
+# test output
+mitra/tests/*report*.json
+mitra/tests/BANK_REPORT.md
+_run/
+tools/backups/
+__pycache__/
+*.pyc

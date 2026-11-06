@@ -1,0 +1,19 @@
+{
+  "l1_kodigenahalli_water.jpeg": {
+    "fields": {"name": "Narasimhaiah", "phone": "", "letter_date": "2026-09-29", "grievance_id": "502806", "taluk": "Madhugiri", "district": "Tumakuru", "gp": "Kodigenahalli"},
+    "record": "502806",
+    "intent": "GRIEVANCE",
+    "place_gp": "Kodigenahalli",
+    "taluk": "Madhugiri"
+  },
+  "l2_chintamani_ssp.jpeg": {
+    "fields": {"name": "Keerthana", "phone": "7483828985", "letter_date": "2026-10-12", "grievance_id": "502854", "taluk": "Chintamani"},
+    "record": "502854",
+    "taluk": "Chintamani"
+  },
+  "l3_kannada_drain.jpeg": {
+    "fields": {"phone": "7892245524", "letter_date": "2026-10-19", "grievance_id": "502976", "taluk": "ಹೊಸಪೇಟೆ", "district": "ವಿಜಯನಗರ"},
+    "record": "502976",
+    "taluk": "Hosapete"
+  }
+}

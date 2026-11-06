@@ -1,0 +1,1 @@
+{"n": 40, "errors": 0, "threshold": 0.55, "auto_routed_share": 1.0, "dept_acc": 0.975, "service_acc": 0.725, "officer_acc": 0.775, "seconds": 20, "model": "gemini-3.6-flash", "at": "2026-10-23T18:03"}

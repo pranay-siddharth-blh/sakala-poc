@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sakala AI Technical Architecture</title>
+<style>
+  @page { size: 1600px 1510px; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:#12305c; --ink:#1e2633; --muted:#5d6878; --line:#dbe2ec; --bg:#f4f7fb;
+    --fe:#2563eb; --api:#0d9488; --ai:#7c3aed; --core:#db2777; --data:#ea580c; --ext:#ca8a04;
+  }
+  html, body { width:1600px; height:1510px; background:var(--bg); font-family:"Segoe UI", "Nirmala UI", sans-serif; color:var(--ink); }
+  .page { width:1600px; min-height:1510px; display:flex; flex-direction:column; }
+  code { font-family:Consolas, "Cascadia Mono", monospace; font-size:9.6px; background:#eef2f8; border-radius:3px; padding:0 3px; color:#1e3a5f; }
+
+  header { background:linear-gradient(90deg,#0d2547 0%,#163d73 60%,#1d4f91 100%); color:#fff; padding:15px 28px 13px; display:flex; justify-content:space-between; align-items:center; gap:24px; }
+  header h1 { font-size:27px; font-weight:700; }
+  header h1 span { color:#ffd166; }
+  header p { font-size:13.2px; color:#cfdcf0; margin-top:3px; max-width:1200px; }
+  .hright { text-align:right; font-size:12px; color:#cfdcf0; line-height:1.5; white-space:nowrap; }
+  .hright b { color:#fff; font-size:15px; display:block; }
+  .hright .kn { font-family:"Nirmala UI"; color:#ffd166; font-size:18px; font-weight:700; }
+
+  .strip { display:flex; gap:9px; padding:9px 24px 2px; }
+  .plabel { width:120px; background:#e8f7ee; border:1px solid #9fdcb6; border-radius:10px; padding:7px 10px; font-size:11.5px; color:#166534; font-weight:700; line-height:1.3; display:flex; align-items:center; }
+  .stat { flex:1; background:#fff; border:1px solid var(--line); border-radius:10px; padding:6px 10px; display:flex; gap:9px; align-items:center; }
+  .stat .n { font-size:19px; font-weight:800; color:#0f766e; white-space:nowrap; }
+  .stat .t { font-size:10.6px; color:var(--muted); line-height:1.3; }
+  .stat .t b { color:var(--ink); }
+
+  .sect { font-size:12.5px; font-weight:700; color:var(--navy); letter-spacing:.3px; text-transform:uppercase; padding:9px 24px 5px; display:flex; justify-content:space-between; }
+  .sect small { text-transform:none; letter-spacing:0; font-weight:600; color:var(--muted); font-size:11px; }
+
+  /* layered stack */
+  .stack { padding:0 24px; display:flex; flex-direction:column; gap:0; }
+  .band { display:grid; grid-template-columns: 112px 1fr; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:0 1px 3px rgba(18,48,92,.06); }
+  .blabel { background:var(--c); color:#fff; padding:8px 10px; display:flex; flex-direction:column; justify-content:center; }
+  .blabel b { font-size:13px; line-height:1.15; }
+  .blabel small { font-size:10px; opacity:.9; margin-top:4px; line-height:1.3; }
+  .bbody { display:grid; gap:8px; padding:8px; background:var(--t); }
+  .card { background:#fff; border:1px solid var(--line); border-top:3px solid var(--c); border-radius:9px; padding:6px 8px 6px; display:flex; flex-direction:column; }
+  .card h4 { font-size:11.4px; color:var(--ink); margin-bottom:3px; display:flex; justify-content:space-between; align-items:baseline; gap:6px; }
+  .card h4 em { font-style:normal; font-size:9.6px; color:var(--c); font-weight:700; white-space:nowrap; }
+  .card ul { list-style:none; }
+  .card li { font-size:10.3px; line-height:1.3; padding:1.5px 0 1.5px 9px; position:relative; color:#2b3442; }
+  .card li::before { content:""; position:absolute; left:0; top:6.5px; width:4px; height:4px; border-radius:50%; background:var(--c); }
+  .card .f { margin-top:auto; padding-top:4px; font-size:9.4px; color:var(--muted); }
+  .flowdown { display:flex; justify-content:center; gap:280px; color:#8aa0bd; font-size:10.5px; font-weight:700; height:20px; align-items:center; }
+  .flowdown span::before { content:"⇅ "; color:#6b86a8; }
+
+  /* pipeline strip inside core band */
+  .pipe { display:flex; gap:4px; align-items:stretch; }
+  .ps { flex:1; background:#fff; border:1px solid #f3c7da; border-radius:8px; padding:4px 6px; font-size:9.8px; line-height:1.25; }
+  .ps b { display:block; font-size:10.4px; color:#9d174d; }
+  .pa { color:#d48cad; font-weight:800; display:flex; align-items:center; font-size:12px; }
+
+  /* tables chips */
+  .tbl { width:100%; border-collapse:collapse; font-size:10.1px; }
+  .tbl th { text-align:left; font-size:9.6px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.3px; padding:3px 4px; border-bottom:1.5px solid var(--line); }
+  .tbl td { padding:2.6px 4px; border-bottom:1px solid #eef1f6; vertical-align:top; line-height:1.28; }
+  .tbl td:first-child { font-weight:700; white-space:nowrap; }
+  .tbl td:nth-child(2) { color:#2b3442; }
+  .tbl td:last-child { color:var(--muted); font-size:9.6px; }
+  .tag { display:inline-block; font-size:8.8px; font-weight:700; border-radius:10px; padding:0 6px; margin-right:3px; vertical-align:1px; }
+  .tg { background:#e0ecff; color:#1e40af; } .tq { background:#e8f7ee; color:#166534; } .tl { background:#fff1e0; color:#9a4d00; } .tx { background:#f1f1f1; color:#666; }
+  .chips { display:flex; flex-wrap:wrap; gap:3px; margin-top:2px; }
+  .chip { font-size:9.6px; padding:1px 6px; border-radius:20px; background:#eef2f8; color:#334155; border:1px solid #dde4ee; white-space:nowrap; }
+  .chip.real { background:#e8f7ee; border-color:#b9e3c8; color:#166534; }
+  .chip.mock { background:#f6f6f6; border-color:#d6d6d6; color:#555; border-style:dashed; }
+
+  .bottom { display:grid; grid-template-columns: 1.55fr 1fr 1fr 0.95fr; gap:10px; padding:8px 24px 8px; flex:1; }
+  .panel { background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
+  .ph { background:var(--navy); color:#fff; font-size:12.3px; font-weight:700; padding:6px 12px; }
+  .pb { padding:7px 11px; font-size:10.6px; line-height:1.35; flex:1; }
+  .steps { display:flex; flex-direction:column; gap:3px; }
+  .st { display:grid; grid-template-columns: 18px 1fr; gap:6px; align-items:start; font-size:10.3px; line-height:1.3; }
+  .st i { font-style:normal; width:18px; height:18px; border-radius:50%; background:var(--c); color:#fff; font-size:9.5px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .sub { font-weight:700; color:var(--navy); font-size:10.8px; margin:5px 0 3px; }
+  .note { font-size:9.8px; color:var(--muted); margin-top:4px; line-height:1.3; }
+  .good { margin-top:5px; font-size:10.2px; background:#e8f7ee; color:#14532d; border-radius:6px; padding:4px 7px; font-weight:600; }
+  .gr li { font-size:10.2px; list-style:none; padding:1.5px 0 1.5px 10px; position:relative; line-height:1.3; }
+  .gr li::before { content:""; position:absolute; left:0; top:6.5px; width:4px; height:4px; border-radius:50%; background:#0f766e; }
+
+  footer { background:var(--navy); color:#fff; display:flex; justify-content:center; gap:26px; padding:9px 0; font-size:13.5px; font-weight:600; }
+  footer span { color:#ffd166; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div>
+    <h1>Sakala AI + Mitra &nbsp;·&nbsp; <span>Technical Architecture, end to end</span></h1>
+    <p>Everything as built (26 Oct 2026): two browser front ends, two FastAPI services, one AI layer (voice agent, intent brain, NL→SQL, understanding and routing, document reading, knowledge base, guardrails), the shared 8-stage grievance pipeline and the SQLite data layer, with every model the project uses and what it falls back to. Every model call is Google Gemini since 23 Oct 2026; Kannada is full duplex on the same live session.</p>
+  </div>
+  <div class="hright"><span class="kn">ಸಕಾಲ · ಮಿತ್ರ</span><b>Government of Karnataka</b>Praja Seva Department<br>Sakala POC :8020 · Mitra :8030 · 26 Oct 2026</div>
+</header>
+
+<div class="strip">
+  <div class="plabel">Measured on the running system</div>
+  <div class="stat"><div class="n">0.45 s</div><div class="t"><b>first word</b> on the live voice (Kannada ~0.5 s); function call 0.4 s</div></div>
+  <div class="stat"><div class="n">0.7 s</div><div class="t">a change reaches <b>every other screen</b></div></div>
+  <div class="stat"><div class="n">97.6%</div><div class="t">same officer as iPGRS on <b>673 real cases</b> (95.7% statewide on 4,611)</div></div>
+  <div class="stat"><div class="n">97.5%</div><div class="t">department <b>from text alone</b> on 40 real complaints (service 72.5%, exact officer 77.5%, Gemini 3.6 Flash)</div></div>
+  <div class="stat"><div class="n">12–17 s</div><div class="t"><b>handwritten letter</b> → official form, all gold fields right</div></div>
+  <div class="stat"><div class="n">113 / 113</div><div class="t">question bank · 32/32 real voice · 18/18 Kannada live · 59/59 guardrails</div></div>
+</div>
+
+<div class="sect">Layered architecture <small>browser → API → AI layer → pipeline → database · both channels share layers 3–5</small></div>
+<div class="stack">
+
+  <!-- 1 FRONTEND -->
+  <div class="band" style="--c:var(--fe);--t:#f3f7ff">
+    <div class="blabel"><b>1 · Frontend &amp; channels</b><small>vanilla JS single-page apps, no framework, canvas renderers</small></div>
+    <div class="bbody" style="grid-template-columns:1.05fr 1fr 1fr 1fr 0.95fr">
+      <div class="card" style="--c:var(--fe)"><h4>WhatsApp citizen<em>POC :8020</em></h4><ul>
+        <li>iPhone-framed WhatsApp: text, voice note, petition photo, location, lists, chips</li>
+        <li>Two-way: officer messages polled every 3.5 s; 👍 / 👎, reply, appeal, track inside the chat</li>
+        <li>“Behind the chat”: the 8 stages light up live; upload a written complaint (modal + form)</li></ul>
+        <div class="f"><code>app_wa_client.js</code> · <code>docupload.js</code></div></div>
+      <div class="card" style="--c:var(--fe)"><h4>Officer &amp; CS console<em>POC :8020</em></h4><ul>
+        <li>Officer inbox, case drawer, accept / ask / return / reject / resolve, ATR check, compensation</li>
+        <li>CS dashboard: Karnataka map (KGIS districts + OSM taluks, SVG, zoom to dots), KPIs, Sakala tracker, Wednesday pack</li>
+        <li>AI mode: ask the data; Chart.js 4.5.1 bar / line / donut</li></ul>
+        <div class="f">generated from <code>wireframe/index.html</code> by <code>make_app_ui.py</code></div></div>
+      <div class="card" style="--c:var(--fe)"><h4>Mitra web desk<em>Mitra :8030</em></h4><ul>
+        <li>Three desks (Citizen / Officer / CS), one voice; particle orb, word-by-word captions, cards, notifications</li>
+        <li>Profile portal, splash, light / dark, 8-stage rail, conversation strip with replayable audio</li>
+        <li>Stage mode: canvas 3D bars, race, line, donut and KaMap, revealed as names are spoken</li></ul>
+        <div class="f"><code>mitra.js</code> · <code>orb.js</code> · <code>stage.js</code> · <code>portal.js</code> · <code>splash.js</code></div></div>
+      <div class="card" style="--c:var(--fe)"><h4>Mitra phone app<em>same server</em></h4><ul>
+        <li>The real Mitra in an iPhone frame (393×852); bottom sheet with tabs that rises for what Mitra did</li>
+        <li>Composer at the thumb, paperclip upload, camera; web ⇄ app by voice</li>
+        <li>“Behind the app” panel mirrors the pipeline via <code>postMessage</code></li></ul>
+        <div class="f"><code>app.js</code> · <code>phone.js</code></div></div>
+      <div class="card" style="--c:var(--fe)"><h4>Audio I/O<em>Web Audio</em></h4><ul>
+        <li>Mic → 16 kHz PCM frames; playback 24 kHz PCM queue with instant cut</li>
+        <li>“Hey Mitra” scanner in every state; echo guard, ducking, barge-in</li>
+        <li>Mute / push-to-talk; 16 kHz WAV clips for the cascade</li></ul>
+        <div class="f">no browser speech service needed</div></div>
+    </div>
+  </div>
+  <div class="flowdown"><span>HTTP / JSON · polling</span><span>WebSocket (audio + events) · SSE · HTTP</span></div>
+
+  <!-- 2 API -->
+  <div class="band" style="--c:var(--api);--t:#effaf8">
+    <div class="blabel"><b>2 · API layer</b><small>Python 3.11 · FastAPI · uvicorn · httpx</small></div>
+    <div class="bbody" style="grid-template-columns:1.25fr 1.25fr 0.8fr">
+      <div class="card" style="--c:var(--api)"><h4>Sakala POC service<em>:8020 · app/server/api.py</em></h4><ul>
+        <li>WhatsApp engine <code>/api/chat</code> · state <code>/api/state</code>, <code>/api/case/{id}</code> · officer actions <code>/api/cases/{id}/action</code>, <code>draft_atr</code></li>
+        <li>Shared intake for every non-WhatsApp door <code>/api/intake</code>: understand · place · create · scrutiny · document · apply · reply · feedback · appeal</li>
+        <li>Data <code>/api/query</code> (9 tools) · <code>/api/ask</code> (AI mode) · insights, tracker, early warning, review pack, E-4, upload, transcribe · change feed <code>/api/changes</code> · clock, reset</li></ul></div>
+      <div class="card" style="--c:var(--api)"><h4>Mitra service<em>:8030 · mitra/server/main.py</em></h4><ul>
+        <li><code>/ws/live</code> full-duplex relay to the live voice model (key stays on the server)</li>
+        <li>Cascade turn <code>/api/turn</code> (audio or text) · <code>/api/tts</code>, <code>tts_part</code> · <code>/api/document</code>, <code>/submit</code> · <code>/api/photo</code></li>
+        <li>Real time <code>/api/events</code> (SSE) · <code>/api/notifs</code> · voice notes · wake-word learning · <code>/api/forget</code> · drives the POC over HTTP (<code>sakala.py</code>)</li></ul></div>
+      <div class="card" style="--c:var(--api)"><h4>Cross-cutting<em>middleware</em></h4><ul>
+        <li>Per-IP rate limits (chat 120/min, ask 60, actions 120, upload 20)</li>
+        <li>8 MB request cap, security headers, CORS, no-cache on pages</li>
+        <li>Debug surfaces only with <code>MITRA_DEBUG=1</code></li></ul></div>
+    </div>
+  </div>
+  <div class="flowdown"><span>every AI call logged (ai_log)</span><span>one code path: tools.execute for Live and cascade</span></div>
+
+  <!-- 3 AI LAYER -->
+  <div class="band" style="--c:var(--ai);--t:#f7f3ff">
+    <div class="blabel"><b>3 · AI layer</b><small>models choose from closed lists; facts and numbers come from data</small></div>
+    <div class="bbody" style="grid-template-columns:repeat(6,1fr)">
+      <div class="card" style="--c:var(--ai)"><h4>Voice agent<em>live.py · speech.py</em></h4><ul>
+        <li>Live: native-audio model, duplex, function calling, English and Kannada (kn-IN), per-desk persona + screen context</li>
+        <li>Cascade: speech-to-text → brain → text-to-speech; typed input, the wake scanner and the fallback path</li>
+        <li>Standby → Live → Standby (20 s)</li></ul></div>
+      <div class="card" style="--c:var(--ai)"><h4>Intent brain<em>brain.py · tools.py</em></h4><ul>
+        <li>55 intents (27 / 39 / 34 per desk); one per turn</li>
+        <li>Rules first (navigation, upload, charts, theme, data, knowledge, verdicts), then model → guided JSON → rules</li>
+        <li>Read-back before consequential actions</li></ul></div>
+      <div class="card" style="--c:var(--ai)"><h4>NL → SQL<em>query.py · compare.py</em></h4><ul>
+        <li>Question → one of 10 typed tools (or AI mode: ≤3 of 5 tools)</li>
+        <li>Fixed parameterised SQL; the model <b>never writes SQL</b></li>
+        <li>Officer scope applied in SQL; charts built from rows</li></ul></div>
+      <div class="card" style="--c:var(--ai)"><h4>Understanding &amp; routing<em>ai.py · local_ai.py</em></h4><ul>
+        <li>Masked text + 5 nearest real cases → Gemini 3.6 Flash → dept › service › grievance (enum from masters, JSON schema)</li>
+        <li>Offline model must agree; keyword rules override; threshold tuned from accuracy</li>
+        <li>Learned role rules → named officer</li></ul></div>
+      <div class="card" style="--c:var(--ai)"><h4>Document AI<em>docread.py</em></h4><ul>
+        <li>Orientation: 4-turn sheet, 2 voters</li>
+        <li>3 parallel reads (transcript ‖ fields + English ‖ check); disagreements flagged</li>
+        <li>Letter's own iPGRS no. retrieved as evidence; form = <code>ipgrs_form.json</code></li></ul></div>
+      <div class="card" style="--c:var(--ai)"><h4>Knowledge &amp; guardrails<em>knowledge.py · guard.py</em></h4><ul>
+        <li><code>knowledge.yaml</code> (34 notes), deterministic match; else “not in my notes”</li>
+        <li>Injection stripped, vendor names scrubbed, identity fixed, spoken ids / numbers checked</li>
+        <li>Masking before any AI step</li></ul></div>
+    </div>
+  </div>
+  <div class="flowdown"><span>/api/intake · /api/query · /api/ask</span><span>same functions as WhatsApp (chat.place_reply, create_grievance)</span></div>
+
+  <!-- 4 CORE -->
+  <div class="band" style="--c:var(--core);--t:#fff4f8">
+    <div class="blabel"><b>4 · Core services</b><small>the shared grievance pipeline + clocks + real time</small></div>
+    <div class="bbody" style="grid-template-columns:2.4fr 1fr 1fr">
+      <div class="card" style="--c:var(--core)"><h4>8-stage pipeline (every channel)<em>pipeline.py · routing.py · chat.py</em></h4>
+        <div class="pipe">
+          <div class="ps"><b>1 Entry</b>WhatsApp, Mitra voice / text, letter, photo, upload</div><span class="pa">›</span>
+          <div class="ps"><b>2 Privacy</b>phone, Aadhaar, email, card no. masked</div><span class="pa">›</span>
+          <div class="ps"><b>3 Understand</b>master-only, confidence, reason</div><span class="pa">›</span>
+          <div class="ps"><b>4 Complete</b>village / GP / taluk, GPS, checklist</div><span class="pa">›</span>
+          <div class="ps"><b>5 Validate</b>duplicate, wrong door, confirm</div><span class="pa">›</span>
+          <div class="ps"><b>6 Route</b>role + taluk + GP → named officer</div><span class="pa">›</span>
+          <div class="ps"><b>7 Clock</b>SLA, reminders, escalation</div><span class="pa">›</span>
+          <div class="ps"><b>8 Leaders</b>officer + CS screens, map</div>
+        </div>
+        <div class="f" style="margin-top:4px">Unclear / outside the pilot / below the bar → scrutiny desk (EO of the taluk), filed only on a yes · every decision's evidence stored in <code>cases.audit</code></div></div>
+      <div class="card" style="--c:var(--core)"><h4>Clock &amp; accountability<em>sla.py</em></h4><ul>
+        <li>L1 → L2 → L3 auto-escalation (7 / 5 / 3 days, assumed)</li>
+        <li>Sakala legal clock, ₹20/day ≤ ₹500, Form C → HRMS (mock)</li>
+        <li>Resolution loop: “not solved” → one rung up</li></ul></div>
+      <div class="card" style="--c:var(--core)"><h4>Real time &amp; analytics<em>sync · notify · analytics</em></h4><ul>
+        <li><code>sync.py</code> tails changes every 0.7 s → <code>notify.py</code> by role → SSE</li>
+        <li>Hotspots, misrouting, data quality, accuracy, tracker, early warning, review pack</li></ul></div>
+    </div>
+  </div>
+  <div class="flowdown"><span>auto-commit · WAL</span><span>ingest.py builds everything from the real Excel</span></div>
+
+  <!-- 5 DATA -->
+  <div class="band" style="--c:var(--data);--t:#fff7f1">
+    <div class="blabel"><b>5 · Data layer</b><small>SQLite (WAL) · files · source data</small></div>
+    <div class="bbody" style="grid-template-columns:1.7fr 0.9fr 1fr 1fr">
+      <div class="card" style="--c:var(--data)"><h4>sakala.db<em>app/data · written the moment a case is filed</em></h4>
+        <div class="chips">
+          <span class="chip real">cases 4,763</span><span class="chip real">case_events 6,394</span><span class="chip">notifications</span><span class="chip">citizen_msgs</span><span class="chip">chat_sessions · chat_messages</span>
+          <span class="chip real">ipgrs_records 9,999 (masked)</span><span class="chip real">officers 3,433</span><span class="chip real">gazetteer 2,371</span><span class="chip">departments 38</span><span class="chip">services 124</span><span class="chip">grievance_types 221</span><span class="chip">sakala_services</span><span class="chip real">sakala_perf 384</span><span class="chip">ai_log</span><span class="chip">kv (clock, evals, thresholds)</span>
+        </div>
+        <div class="f"><code>cases.audit</code> = routing evidence · <code>cases.doc</code> = the letter's form · reset from <code>sakala_pristine.db</code></div></div>
+      <div class="card" style="--c:var(--data)"><h4>mitra.db<em>mitra/data</em></h4>
+        <div class="chips"><span class="chip">sessions</span><span class="chip">turns (7-day retention)</span><span class="chip">voice_notes</span><span class="chip">feed</span><span class="chip">seen cursors</span><span class="chip">deviations</span></div>
+        <div class="f">“forget this conversation” deletes a session's turns</div></div>
+      <div class="card" style="--c:var(--data)"><h4>Files &amp; models on disk</h4>
+        <div class="chips"><span class="chip">local_models.joblib</span><span class="chip">llm_eval.json</span><span class="chip">knowledge.yaml</span><span class="chip">ipgrs_form.json</span><span class="chip">wake_variants.json</span><span class="chip">mapdata.js (31 districts)</span><span class="chip">.env (keys, server only)</span></div></div>
+      <div class="card" style="--c:var(--data)"><h4>Source data → ingest.py<em>~2 min</em></h4>
+        <div class="chips"><span class="chip real">9,999 iPGRS grievances, 3–9 Oct 2026</span><span class="chip real">Sakala 2025 district reports</span><span class="chip">KGIS / OSM boundaries</span><span class="chip mock">full LGD master</span><span class="chip mock">live iPGRS / HRMS APIs</span></div>
+        <div class="f">masters, learned officer rules, gazetteer, officers, caseload, offline model, routing eval</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom">
+
+  <div class="panel">
+    <div class="ph">A · Every model in the project</div>
+    <div class="pb">
+      <table class="tbl">
+        <tr><th>Model</th><th>Used for</th><th>Falls back to</th></tr>
+        <tr><td><span class="tag tg">Gemini</span>gemini-3.8-live</td><td>Mitra full-duplex voice + function calling, English and Kannada (kn-IN)</td><td>cascade (5 min)</td></tr>
+        <tr><td><span class="tag tg">Gemini</span>gemini-3.8-flash</td><td>Mitra brain (cascade, guided JSON), Kannada rendering of replies, letter-reader fallback</td><td>3.5-flash → 3.5 / 3.1-lite → rules</td></tr>
+        <tr><td><span class="tag tg">Gemini</span>gemini-3.6-flash</td><td>POC understanding (enum JSON), petition OCR, ATR check + draft, AI-mode planner + writer, Kannada for officers, briefs; letter reads ×3 in parallel; orientation voter</td><td>3.1-flash-lite → offline model</td></tr>
+        <tr><td><span class="tag tg">Gemini</span>gemini-3.1-flash-lite</td><td>Mitra speech-to-text + wake check; WhatsApp voice notes, AI-mode mic; orientation voter</td><td>3.5-flash-lite → 3.8-flash / 3.6-flash</td></tr>
+        <tr><td><span class="tag tg">Gemini</span>gemini-3.8-flash-tts</td><td>Mitra cascade voice only (Kore); replies over HTTP are read by the live voice instead</td><td>lite-tts → 3.1-tts → browser</td></tr>
+        <tr><td><span class="tag tl">Local</span>TF-IDF + SGD</td><td>38 departments / 124 services, 5 nearest real cases (retrieval), keyword rules, Kannada transliteration; must agree before auto-routing</td><td>always on</td></tr>
+        <tr><td><span class="tag tl">Local</span>rules</td><td>wrong door, out of scope, Sakala requests, intents (EN + KN), knowledge match, question router</td><td>always on</td></tr>
+        <tr><td><span class="tag tx">Removed</span>qwen4-deploy · qwen3-asr · qwen3-tts</td><td>the office H200 gateway; removed 23 Oct 2026, nothing calls it</td><td>—</td></tr>
+        <tr><td><span class="tag tx">Idle</span>Sarvam saaras / bulbul</td><td>adapters written; only by explicit setting, no key</td><td>not active</td></tr>
+      </table>
+      <div class="note">Gemini only. Mitra: a 429 parks a model for 30 min, a 503 for 2 min, then the next in the chain. POC: Gemini's OpenAI-compatible endpoint, JSON schema, reasoning effort low; 429 / 5xx / timeouts fall through the chain, no network backs off 60 s to the offline model. On screen and in speech the engine is only ever “Mitra” / “Sakala AI”.</div>
+    </div>
+  </div>
+
+  <div class="panel" style="--c:var(--ai)">
+    <div class="ph">B · NL → SQL (ask the data)</div>
+    <div class="pb">
+      <div class="sub">Mitra, by voice</div>
+      <div class="steps">
+        <div class="st"><i>1</i><div>“Which district has the most overdue cases, on the map?”</div></div>
+        <div class="st"><i>2</i><div>Deterministic router (<code>route_question</code>) or the model picks a tool + typed args (district, taluk, dept, status, metric, group_by, chart)</div></div>
+        <div class="st"><i>3</i><div>POC <code>/api/query</code> runs fixed, parameterised SQL; officer scope applied; names resolved (Mysore → Mysuru)</div></div>
+        <div class="st"><i>4</i><div>Rows + per-district geo → answer + chart card; numbers spoken are checked against the rows</div></div>
+      </div>
+      <div class="sub">POC AI mode, typed</div>
+      <div class="steps">
+        <div class="st"><i>1</i><div>Question guard: overrides and off-topic refused, logged</div></div>
+        <div class="st"><i>2</i><div>Planner picks ≤3 of: query_cases, real_records, record, sakala_2025, insights</div></div>
+        <div class="st"><i>3</i><div>Writer drafts HTML only from tool results → sanitised; chart from the rows</div></div>
+      </div>
+      <div class="good">The model never writes SQL and never invents a number.</div>
+      <div class="note">SQL lives in <code>app/server/query.py</code> (lookup, find, iPGRS, officer, place, statewide, Sakala 2025), <code>compare.py</code> (compare, ranking with per-district geo) and <code>analytics.py</code> (insights, tracker, review pack).</div>
+    </div>
+  </div>
+
+  <div class="panel" style="--c:#2563eb">
+    <div class="ph">C · Voice agent, one turn</div>
+    <div class="pb">
+      <div class="steps">
+        <div class="st"><i>1</i><div>“Hey Mitra” / tap / type → Live opens (setup 1.3 s)</div></div>
+        <div class="st"><i>2</i><div>16 kHz audio streamed through <code>/ws/live</code>; transcript both ways</div></div>
+        <div class="st"><i>3</i><div>Model calls a function (0.4 s) → <code>tools.execute</code> → POC</div></div>
+        <div class="st"><i>4</i><div>Result <code>{say, data, ui}</code> sanitised → spoken (first word 0.45 s), cards and charts drawn</div></div>
+        <div class="st"><i>5</i><div>Barge-in cuts it at once; HTTP replies (letter read, notification) read in the same voice</div></div>
+        <div class="st"><i>6</i><div>20 s silence → Standby; failure → cascade, same functions; a language switch reopens Live in kn-IN / en</div></div>
+      </div>
+      <div class="sub">Cascade</div>
+      <div class="note" style="margin-top:0">16 kHz WAV → speech-to-text → rules / model brain → function → text-to-speech, sentence by sentence (first part arrives with the turn).</div>
+      <div class="sub">Real-time loop across desks</div>
+      <div class="steps">
+        <div class="st"><i>1</i><div>Officer resolves by voice → POC writes <code>cases</code> + <code>case_events</code></div></div>
+        <div class="st"><i>2</i><div><code>sync.py</code> sees it within 0.7 s → <code>notify.py</code> picks who is told</div></div>
+        <div class="st"><i>3</i><div>SSE → the citizen's screen: card + Mitra says it in the live voice; “not solved” → one rung up</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph">D · Guardrails &amp; verification</div>
+    <div class="pb">
+      <ul class="gr">
+        <li>Only official masters; else a person decides</li>
+        <li>Masking before any AI step</li>
+        <li>Acts only through functions; read-back first</li>
+        <li>Officers see their ladder; citizens their own</li>
+        <li>Ladders never mix; compensation only Sakala</li>
+        <li>Junk never filed; unclear → scrutiny on a yes</li>
+        <li>Every action on the record “via Mitra (voice)”</li>
+        <li>7-day retention, “forget this conversation”</li>
+      </ul>
+      <div class="sub">Test suites (green)</div>
+      <div class="chips"><span class="chip real">bank 113</span><span class="chip real">battery 101</span><span class="chip real">guardrails 59 + 27</span><span class="chip real">real Live 32</span><span class="chip real">Kannada live 18</span><span class="chip real">letters 28</span><span class="chip real">return 31</span><span class="chip real">statewide 40</span><span class="chip real">parity 14</span><span class="chip real">knowledge 14</span></div>
+      <div class="note">Headless Edge over the DevTools protocol for every UI; fake Live server for offline runs.</div>
+      <div class="sub">Run &amp; deploy</div>
+      <div class="chips"><span class="chip">launchers (Brave tab) · run.bat → :8020 / :8030</span><span class="chip">test instances :8031 / :8032</span><span class="chip">keys only in .env</span><span class="chip">AWS: systemd services + Caddy HTTPS gate</span></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div>Two front ends, one pipeline</div><span>•</span><div>Models choose, data decides</div><span>•</span><div>Every number from SQL</div><span>•</span><div>Every action on the record</div><span>•</span><div>Live on every screen</div>
+</footer>
+
+</div>
+</body>
+</html>

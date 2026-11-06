@@ -1,0 +1,31 @@
+{
+  "_about": "The official iPGRS grievance form (Praja Seve Department portal, 3 steps), as the contract every intake door fills. Screenshots: docs/ipgrs_form/. Required = the portal marks it with *; rules = what the portal enforces.",
+  "steps": [
+    {"id": 1, "title": "Grievance & Location", "fields": [
+      {"key": "description", "label": "Grievance description (own words)", "required": true, "rule": "25 to 250 words; English or Kannada letters, numbers, spaces, commas and periods only; exact place (street, landmark, door number); since when; no Aadhaar, bank or card numbers"},
+      {"key": "attachment", "label": "Attachment", "required": false, "rule": "PDF, PNG or JPG; all files together at most 30 MB"},
+      {"key": "district", "label": "District", "required": true, "rule": "from the official district list"},
+      {"key": "taluk", "label": "Taluk", "required": true, "rule": "from the taluks of that district"},
+      {"key": "gp", "label": "Village → Gram Panchayat", "required": false, "rule": "from the GPs of that taluk; needed for GP-level officers (PDO)"},
+      {"key": "pincode", "label": "Pincode", "required": false, "rule": "6 digits, inside the district"},
+      {"key": "address", "label": "Address", "required": true, "rule": "where the problem is (map pin or text)"}
+    ]},
+    {"id": 2, "title": "Grievance Classification", "fields": [
+      {"key": "department", "label": "Department", "required": true, "rule": "from the official master"},
+      {"key": "line", "label": "Line department", "required": true, "rule": "from the official master, under the department"},
+      {"key": "service", "label": "Service", "required": true, "rule": "from the official master, under the line department"},
+      {"key": "grievance", "label": "Grievance name", "required": true, "rule": "from the official master, under the service"}
+    ]},
+    {"id": 3, "title": "Complainant Details", "fields": [
+      {"key": "name", "label": "Complainant name", "required": true, "rule": "as written; not provided is accepted for a paper letter"},
+      {"key": "phone", "label": "Mobile number", "required": true, "rule": "10 digits, Indian mobile; not provided is accepted for a paper letter"},
+      {"key": "complainant_address", "label": "Complainant address", "required": false, "rule": "as written"},
+      {"key": "letter_date", "label": "Date of the letter", "required": false, "rule": "as written, normalised to YYYY-MM-DD"},
+      {"key": "addressed_to", "label": "Addressed to", "required": false, "rule": "the office or officer the letter names"},
+      {"key": "since", "label": "Since when", "required": false, "rule": "as written"},
+      {"key": "asked_for", "label": "What is asked for", "required": false, "rule": "as written"}
+    ]}
+  ],
+  "forbidden": ["aadhaar", "bank account", "card number"],
+  "excel_columns": ["G.Id", "Grievance Description", "Department", "Line Department", "Service Name", "Grievance Name", "Service Type", "District", "Taluk", "GP/Village/Hobli", "Created Date", "Status", "Officer Role", "Pending with / Closed By", "Grievance Source"]
+}

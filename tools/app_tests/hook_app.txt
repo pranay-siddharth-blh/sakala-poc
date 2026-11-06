@@ -1,0 +1,34 @@
+<script>
+(function(){
+  const q=new URLSearchParams(location.search), flow=q.get('flow'); if(!flow) return;
+  const W=ms=>new Promise(r=>setTimeout(r,ms));
+  const until=async (f,ms=20000)=>{ const t0=Date.now(); while(Date.now()-t0<ms){ try{ if(f()) return true; }catch(e){} await W(150);} throw new Error('timeout waiting '+f); };
+  const click=async t=>{ await until(()=>[...document.querySelectorAll('.wa-btns button:not([disabled])')].some(x=>x.textContent.includes(t))); [...document.querySelectorAll('.wa-btns button:not([disabled])')].reverse().find(x=>x.textContent.includes(t)).click(); await W(200); await until(()=>!WA.busy); };
+  const sheet=async t=>{ await until(()=>document.querySelectorAll('.wa-listbtn:not([disabled])').length); [...document.querySelectorAll('.wa-listbtn:not([disabled])')].pop().click(); await W(500); const b=[...document.querySelectorAll('.wa-sheet button')].find(x=>x.textContent.includes(t)); if(!b) throw new Error('no row '+t); b.click(); await W(400); await until(()=>!WA.busy); };
+  const send=async t=>{ waSend({text:t},t); await W(200); await until(()=>!WA.busy); };
+  const dump=(extra={})=>document.body.setAttribute('data-res', JSON.stringify({flow, msgs:WA.history.length, stages:[...document.querySelectorAll('.pl-step')].map(e=>e.className.replace('pl-step','').trim()||'-').join(','), result:WA.result?WA.result.officer.short+' '+WA.result.caseId:null, mine:S.cases.filter(c=>c.mine).length, cases:S.cases.length, ...extra}));
+  (async()=>{ try{
+    await until(()=>BOOT && document.querySelector('.wa-btns button')); await until(()=>!WA.busy);
+    if(flow==='views'){ for (const p of ['citizen','officer','cs']){ S.profile=p; render(); }
+      for (const v of ['inbox','due','sakala','team','scrutiny']){ S.profile='officer'; S.officer='ac_hunsur'; S.officerView=v; render(); }
+      for (const v of ['dash','ai','sakala','all','insights','accuracy','upload','roadmap']){ S.profile='cs'; S.csView=v; render(); await W(1500); }
+      S.profile='citizen'; S.citizenView='track'; render(); S.citizenView='wa'; render();
+      for (const c of S.cases.slice(0,60).concat(S.cases.filter(c=>c.sakala||c.synthetic))){ S.profile='officer'; S.officer=c.owner; openCase(c.id); }
+      await wednesdayPack('cs'); await wednesdayPack('dc'); await W(500); const out=QS.map(x=>{const r=answer(x);return (r.none?'NONE':'OK')}).join(''); await tick(7);
+      dump({views:'ALL-OK', ans:out}); return; }
+    await click('English');
+    if(flow==='water'){ await send('ನಮ್ಮ ಗೊರಹಳ್ಳಿ ಗ್ರಾಮದಲ್ಲಿ ಕಳೆದ ಒಂದು ವಾರದಿಂದ ಕುಡಿಯುವ ನೀರು ಬರುತ್ತಿಲ್ಲ'); await click('Submit'); }
+    if(flow==='light'){ await send('Street light near the bus stand is not working for two weeks.'); await click('Piriyapatna'); await sheet('Chapparadahalli'); await click('Submit'); }
+    if(flow==='apply'){ await sheet('Apply for a service'); await sheet('Caste'); await until(()=>document.querySelector('#waQuick button')); document.querySelector('#waQuick button').click(); await W(300); await until(()=>!WA.busy); await sheet('Komalapura'); await click('document photo'); }
+    if(flow==='photo'){ $('#waCam').click(); await W(300); await until(()=>!WA.busy); await click('Submit'); }
+    if(flow==='voice'){ startVoice(); await W(8000); await until(()=>!WA.busy); await click('Submit'); }
+    if(flow==='twoway'){ await send('road is bad in Hunsur'); await click('Submit'); const id=WA.result.caseId, off=WA.result.officer.id;
+      await API(`/api/cases/${id}/action`,{action:'info',officer:off,note:'Please share more info on which area in Hunsur and send pics of the condition of the road.'});
+      await until(()=>document.querySelector('.wa-row.officer'),15000); await until(()=>!WA.busy); await W(600);
+      dump({officerBubble:document.querySelector('.wa-row.officer').textContent.slice(0,140), track:document.querySelector('[data-cv="track"] .cnt')?.textContent}); return; }
+    if(flow==='resolve'){ await send('Street light near the bus stand is not working for two weeks.'); await click('Piriyapatna'); await sheet('Chapparadahalli'); await click('Submit'); document.querySelector('#plOpen').click(); await W(800);
+      document.querySelector('#aResolve').click(); await W(200); document.querySelector('#atrT').value='Inspected on 15 Oct with the GP lineman. The faulty LED fitting and fuse of the street light near the bus stand were replaced and it is working again; citizen confirmed.'; document.querySelector('#doRes').click(); await W(2500); await W(1800); dump({drawer:document.querySelector('#atrChk').textContent.slice(0,120)}); return; }
+    dump();
+  }catch(e){ document.body.setAttribute('data-ferr', e.message); dump(); } })();
+})();
+</script>

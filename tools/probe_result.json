@@ -1,0 +1,62 @@
+[
+ [
+  "LLM qwen4-deploy",
+  true,
+  "0.12s \u00b7 OK"
+ ],
+ [
+  "ASR qwen3-asr",
+  true,
+  "0.38s \u00b7 'The street light near the bus stand in K'"
+ ],
+ [
+  "TTS qwen3-tts",
+  false,
+  "HTTPStatusError: Client error '400 Bad Request' for url 'https://10.48.242.4/openai/v1/audio/speech'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTT"
+ ],
+ [
+  "GEMINI_API_KEY present",
+  true,
+  ""
+ ],
+ [
+  "list models",
+  true,
+  "0.27s \u00b7 63 models"
+ ],
+ [
+  "generateContent gemini-3.8-flash",
+  false,
+  "RuntimeError: HTTP 429 {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing deta"
+ ],
+ [
+  "generateContent gemini-3.8-flash",
+  false,
+  "RuntimeError: HTTP 429 {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing deta"
+ ],
+ [
+  "Interactions API gemini-3.8-flash",
+  false,
+  "RuntimeError: HTTP 429 {\"error\":{\"message\":\"Rate limit exceeded for model gemini-3.8-flash (limit: 20 requests per day on Free Tier). Please retry in 13h54m11s or "
+ ],
+ [
+  "TTS generateContent gemini-3.8-flash-tts",
+  true,
+  "3.27s \u00b7 221152 bytes audio/wav"
+ ],
+ [
+  "TTS generateContent gemini-3.8-flash-lite-tts",
+  true,
+  "3.04s \u00b7 209632 bytes audio/wav"
+ ],
+ [
+  "STT via generateContent (audio in)",
+  false,
+  "RuntimeError: HTTP 429 {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more inform"
+ ],
+ [
+  "SARVAM_API_KEY present",
+  false,
+  "not in any env file"
+ ]
+]

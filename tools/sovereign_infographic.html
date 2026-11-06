@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Mitra Sovereign Native Full-Duplex Voice Architecture</title>
+<style>
+  :root { --bg:#061226; --panel:rgba(8,28,58,.78); --line:#2fa9e8; --glow:rgba(57,198,255,.35); --cyan:#7fe0ff; --ink:#e8f3ff; --mute:#9fc3e6; --amber:#f5b942; --green:#4be38f; --violet:#a78bfa; --rose:#ff7eb6; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { width:1800px; height:1180px; background:radial-gradient(1200px 600px at 50% -10%, #12356a 0%, #0a1e3f 40%, #061226 75%); color:var(--ink); font-family:"Segoe UI","Bahnschrift","Noto Sans Kannada",sans-serif; font-size:12.5px; line-height:1.32; position:relative; overflow:hidden; }
+  body:before { content:""; position:absolute; inset:0; background-image:linear-gradient(rgba(57,198,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(57,198,255,.06) 1px, transparent 1px); background-size:60px 60px; pointer-events:none; }
+  .page { position:relative; width:1800px; height:1180px; padding:14px 18px; display:grid; grid-template-rows:84px 1fr 78px; gap:10px; }
+  header { display:grid; grid-template-columns:200px 1fr 230px; align-items:center; }
+  header .l, header .r { font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--cyan); line-height:1.4; }
+  header .r { text-align:right; }
+  header .r b { display:block; color:#fff; letter-spacing:.08em; font-size:14px; }
+  header h1 { text-align:center; font-size:34px; font-weight:800; letter-spacing:.01em; color:#fff; text-shadow:0 0 18px rgba(127,224,255,.55); }
+  header h1 span { color:var(--cyan); }
+  header p { text-align:center; font-size:15px; color:var(--mute); margin-top:4px; }
+  header p b { color:var(--amber); font-weight:600; }
+  .main { display:grid; grid-template-columns:280px 1fr 410px; gap:12px; min-height:0; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; box-shadow:0 0 22px var(--glow), inset 0 0 30px rgba(57,198,255,.06); padding:12px 14px; position:relative; min-height:0; }
+  .panel h2 { font-size:19px; font-weight:800; color:#fff; margin-bottom:8px; }
+  .panel h2 small { font-size:12px; font-weight:500; color:var(--mute); margin-left:6px; }
+  .box { background:rgba(12,40,80,.85); border:1px solid rgba(127,224,255,.55); border-radius:9px; padding:8px 10px; box-shadow:0 0 12px rgba(57,198,255,.18); }
+  .box h4 { font-size:13.5px; color:#fff; margin-bottom:3px; }
+  .box h4 em { font-style:normal; color:var(--cyan); font-weight:500; font-size:11.5px; margin-left:5px; }
+  .box ul { list-style:none; }
+  .box li { padding-left:12px; position:relative; color:var(--ink); }
+  .box li:before { content:"›"; position:absolute; left:0; color:var(--cyan); }
+  .chips { display:flex; flex-wrap:wrap; gap:4px; margin-top:5px; }
+  .chip { border:1px solid rgba(127,224,255,.5); border-radius:999px; padding:1px 8px; font-size:11px; color:var(--cyan); background:rgba(57,198,255,.08); }
+  .chip.g { color:var(--green); border-color:rgba(75,227,143,.5); background:rgba(75,227,143,.08); }
+  .chip.a { color:var(--amber); border-color:rgba(245,185,66,.5); background:rgba(245,185,66,.08); }
+  .call { border:1px solid var(--amber); background:rgba(245,185,66,.1); color:#ffe2a8; border-radius:9px; padding:6px 10px; font-size:12px; }
+  .call b { color:var(--amber); }
+  .ok { border:1px solid var(--green); background:rgba(75,227,143,.1); color:#d9ffe9; border-radius:9px; padding:6px 10px; font-size:12px; }
+  .ok b { color:var(--green); }
+  .arrow { text-align:center; color:var(--cyan); font-size:18px; line-height:1; margin:2px 0; }
+  /* left column */
+  .left { display:flex; flex-direction:column; gap:6px; }
+  .left .box { padding:7px 10px; }
+  .left .gem { border-color:var(--amber); background:linear-gradient(135deg, rgba(245,185,66,.12), rgba(167,139,250,.12)); }
+  .left .gem h4 { color:var(--amber); }
+  /* centre */
+  .centre { display:grid; grid-template-rows:auto 1fr auto; gap:8px; }
+  .boundary { border:1.5px dashed rgba(127,224,255,.8); border-radius:12px; padding:30px 12px 10px; position:relative; display:grid; grid-template-columns:150px 285px 165px 190px 1fr; grid-template-rows:auto auto; gap:8px; align-items:start; }
+  .boundary .wide { grid-column:1 / -1; align-self:end; }
+  .map { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; }
+  .map div { border:1px solid rgba(127,224,255,.45); border-radius:8px; padding:5px 8px; font-size:11.5px; background:rgba(12,40,80,.8); }
+  .map div b { display:block; color:var(--amber); font-size:11px; letter-spacing:.03em; }
+  .map div span { color:var(--green); }
+  .boundary:before { content:"🔒 Sovereign boundary · runs in Karnataka on government-controlled GPUs · no outbound network path · weights held by us"; position:absolute; top:7px; left:14px; font-size:12px; color:var(--cyan); letter-spacing:.04em; }
+  .core { border:1.5px solid var(--cyan); box-shadow:0 0 26px rgba(127,224,255,.45); background:linear-gradient(180deg, rgba(20,60,110,.95), rgba(12,40,80,.95)); }
+  .core h4 { font-size:15px; }
+  .core .sub { color:var(--mute); font-size:11px; margin-bottom:5px; }
+  .core ul li { margin:2px 0; }
+  .stream { font-size:11.5px; color:var(--cyan); display:flex; align-items:center; gap:4px; margin:4px 0 2px; }
+  .flow { display:flex; flex-direction:column; gap:8px; }
+  .disp { border-color:var(--violet); box-shadow:0 0 14px rgba(167,139,250,.35); }
+  .disp h4 { color:var(--violet); }
+  .fact { display:grid; grid-template-columns:1fr; gap:8px; }
+  .fact .row { display:grid; grid-template-columns:repeat(7, 1fr); gap:7px; align-items:stretch; }
+  .fact .row .box { padding:7px 8px; font-size:11.5px; }
+  .fact .row .box h4 { font-size:12.5px; }
+  .timeline { display:grid; grid-template-columns:repeat(4,1fr) 170px; gap:7px; }
+  .tl { background:rgba(12,40,80,.85); border:1px solid rgba(127,224,255,.45); border-radius:9px; padding:7px 9px; font-size:11.5px; }
+  .tl b { display:block; color:var(--amber); font-size:12.5px; margin-bottom:2px; }
+  .tl.last { border-color:var(--green); background:rgba(75,227,143,.12); }
+  .tl.last b { color:var(--green); }
+  /* right */
+  .right { display:flex; flex-direction:column; gap:10px; }
+  .gpus { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .gpu { border:1px solid rgba(127,224,255,.6); border-radius:9px; padding:8px 10px; background:linear-gradient(180deg, rgba(20,60,110,.9), rgba(10,30,60,.9)); text-align:center; }
+  .gpu.hot { border-color:var(--amber); box-shadow:0 0 16px rgba(245,185,66,.35); }
+  .gpu b { display:block; font-size:13px; color:#fff; }
+  .gpu span { font-size:11px; color:var(--mute); }
+  .tiles { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; }
+  .tile { border:1px solid rgba(127,224,255,.5); border-radius:9px; padding:7px 8px; background:rgba(12,40,80,.85); }
+  .tile .n { font-size:22px; font-weight:800; color:#fff; line-height:1.05; text-shadow:0 0 12px rgba(127,224,255,.5); }
+  .tile .t { font-size:11px; color:var(--mute); margin-top:2px; }
+  .tile.g .n { color:var(--green); }
+  .tile.a .n { color:var(--amber); }
+  .scale { display:grid; gap:6px; }
+  .srow { display:grid; grid-template-columns:92px 86px 78px 1fr; gap:6px; align-items:center; border-radius:9px; padding:6px 10px; border:1px solid rgba(127,224,255,.4); background:rgba(12,40,80,.8); font-size:11.5px; }
+  .srow b { font-size:14px; color:#fff; }
+  .srow.s1 { border-color:var(--green); } .srow.s2 { border-color:var(--cyan); } .srow.s3 { border-color:var(--violet); }
+  .srow .k { color:var(--mute); }
+  .opt { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+  .opt div { border:1px solid rgba(127,224,255,.4); border-radius:7px; padding:4px 8px; font-size:11px; color:var(--ink); background:rgba(12,40,80,.7); }
+  footer { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px; }
+  footer .f { border:1px solid rgba(127,224,255,.6); border-radius:12px; padding:9px 12px; background:var(--panel); display:flex; gap:10px; align-items:center; box-shadow:0 0 18px var(--glow); }
+  footer .f i { font-style:normal; width:34px; height:34px; border-radius:50%; border:2px solid var(--cyan); color:var(--cyan); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; flex:none; box-shadow:0 0 12px rgba(127,224,255,.5); }
+  footer .f b { color:#fff; display:block; font-size:13px; }
+  footer .f span { font-size:11.5px; color:var(--mute); }
+  .kn { font-family:"Noto Sans Kannada","Nirmala UI",sans-serif; }
+</style></head><body><div class="page">
+
+<header>
+  <div class="l">People<br>Services<br>Sovereignty</div>
+  <div>
+    <h1>Mitra <span>—</span> Sovereign Native Full-Duplex Voice Architecture</h1>
+    <p>Gemini stays as the measured reference → native Kannada + English core trained on our own two H200s → <b>parity attempt on day 90</b> → sign-off retires Gemini → scale to 10k and 50k live sessions</p>
+  </div>
+  <div class="r"><b class="kn">ಸಕಾಲ · ಮಿತ್ರ</b>Government of Karnataka<br>Praja Seva Department<br>26 Oct 2026</div>
+</header>
+
+<div class="main">
+
+  <!-- LEFT: today -->
+  <div class="panel left">
+    <h2>Today <small>production + the reference</small></h2>
+    <div class="box"><h4>👤 Citizen / Officer / CS</h4><ul><li>Web, mobile, telephony</li><li>16 kHz up · 24 kHz down</li></ul></div>
+    <div class="arrow">▼</div>
+    <div class="box"><h4>🔁 WebSocket relay</h4><ul><li><code>/ws/live</code> contract, key server-side</li><li>Masking, echo gate, harness rules</li></ul></div>
+    <div class="arrow">▼</div>
+    <div class="box gem"><h4>✦ Gemini Live <em>external, stays until sign-off</em></h4><ul><li>Serves citizens while the core trains</li><li>Measured by the atlas: timings, policies</li><li><b>Never</b> a training source · retired the day you sign</li></ul></div>
+    <div class="arrow">▼</div>
+    <div class="box"><h4>⚙ Existing Mitra layer <em>unchanged</em></h4><div class="chips"><span class="chip">router</span><span class="chip">SQL</span><span class="chip">tools.execute</span><span class="chip">guard</span><span class="chip">read-back</span><span class="chip">knowledge</span><span class="chip">transfer</span></div></div>
+    <div class="ok" style="margin-top:4px"><b>What stays the same:</b> browser, relay, router, tools, SQL, guard, the 8-stage pipeline, every test suite.</div>
+    <div class="call"><b>Interim:</b> Gemini via Mumbai region, zero retention + our minimisation gateway: nothing stored at Google.</div>
+    <div class="box" style="margin-top:auto;border-color:var(--amber)"><h4 style="color:var(--amber)">📏 The bar to match <em>measured today</em></h4>
+      <div class="chips"><span class="chip a">first word 0.45 s</span><span class="chip a">function call 0.4 s</span><span class="chip a">Kannada first word ~0.5 s</span><span class="chip a">Kannada bank 55/55</span><span class="chip a">Kannada live UI 18/18</span><span class="chip a">question bank 113/113</span><span class="chip a">real-Live battery 32/32</span><span class="chip a">guardrails 59/59</span><span class="chip a">change on every screen 0.7 s</span></div>
+      <ul style="margin-top:5px"><li>The atlas turns each of these into a tolerance; parity = every one met by our core.</li></ul></div>
+  </div>
+
+  <!-- CENTRE -->
+  <div class="panel centre">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h2>Proposed Sovereign Full-Duplex Architecture</h2><div class="call" style="padding:4px 10px"><b>Not a cascade:</b> one model listens and speaks at once; tools and the brain only speak through it.</div></div>
+
+    <div class="boundary">
+      <div class="flow">
+        <div class="box"><h4>Same browser / relay</h4><ul><li>Web · mobile · PSTN bridge</li><li>Upstream swapped from Gemini to the core</li></ul></div>
+        <div class="box" style="margin-top:auto"><h4>🔊 Natural voice reply</h4><ul><li>24 kHz, in Mitra's own voice</li><li>captions word by word</li><li>charts build as she speaks</li></ul></div>
+      </div>
+      <div class="box core">
+        <h4>Native Duplex Core <em>Moshi family · 7B teacher → 3B serving</em></h4>
+        <div class="sub">PersonaPlex recipe · Mimi codec 12.5 Hz · Kannada + English on one model</div>
+        <ul>
+          <li>🎙 Always listening <b>and</b> speaking, every 80 ms</li>
+          <li>⇄ Barge-in learned, yields in ~0.25 s (Gemini 1.2 s)</li>
+          <li>🗣 First word ≈ 0.3–0.5 s</li>
+          <li class="kn">ಕನ್ನಡ ⇄ English switch mid-sentence, no reconnect</li>
+          <li>Style and persona per desk; code-mixed Kannada by round two</li>
+        </ul>
+        <div class="stream">📄 Live user transcript → dispatcher</div>
+        <div class="stream">📝 Inner monologue → captions, number checks</div>
+        <div class="stream">🔑 Delegation stream (round-two refinement)</div>
+      </div>
+      <div class="flow">
+        <div class="box disp"><h4>Transcript-driven dispatch <em>exists</em></h4><ul><li>Existing brain: rules + Sarvam guided JSON picks the intent from the live transcript</li><li>tools.execute · query.run</li><li>Read-back before any action</li></ul></div>
+        <div class="box"><h4>📥 Prefill answer</h4><ul><li>Result text pushed into the core, spoken in its own voice while still listening</li></ul></div>
+      </div>
+      <div class="flow">
+        <div class="box"><h4>⚙ Deterministic layer <em>~70% of turns</em></h4><div class="chips"><span class="chip">router</span><span class="chip">SQL · ids</span><span class="chip">SLA</span><span class="chip">guard</span><span class="chip">knowledge</span></div></div>
+        <div class="box"><h4>🧠 Sovereign text brain</h4><ul><li>Sarvam-105B MoE, Apache 2.0, FP8</li><li>reasoning, wording, Kannada text</li><li>text only, never hears audio</li></ul></div>
+      </div>
+      <div class="flow">
+        <div class="call"><b>Reasoning parity</b> from delegated text intelligence; <b>timing</b> lives in the core.</div>
+        <div class="ok"><b>100% sovereign from sign-off:</b> weights ours · runs in Karnataka · no outbound path · nothing from Gemini in training · hash-chained log of every payload.</div>
+        <div class="box"><h4>Gemini's role</h4><ul><li>outside the boundary</li><li>measured, compared</li><li>never copied or trained from</li><li>retired at sign-off</li></ul></div>
+      </div>
+      <div class="box wide" style="border-color:var(--cyan)"><h4>One turn, all inside the boundary</h4>
+        <div class="map" style="grid-template-columns:repeat(7,1fr)">
+          <div><b>1 · audio in</b>16 kHz PCM through the relay; masked, echo-gated</div>
+          <div><b>2 · core listens + speaks</b>one step every 80 ms; answers while you finish</div>
+          <div><b>3 · live transcript</b>text of your words streams to the dispatcher</div>
+          <div><b>4 · decide</b>rules + Sarvam intent → tools.execute; SQL for every number</div>
+          <div><b>5 · brain if needed</b>Sarvam-105B for wording and reasoning, text only</div>
+          <div><b>6 · prefill</b>result text pushed into the core</div>
+          <div><b>7 · voice out</b>her own voice at 24 kHz + captions; <span>first word 0.3–0.5 s</span></div>
+        </div>
+      </div>
+      <div class="box wide"><h4>Every Gemini behaviour Mitra has today → where the sovereign design gives it</h4>
+        <div class="map">
+          <div><b>First word 0.45 s · barge-in</b>the core: one step per 80 ms, learned turn-taking <span>· core, month 1–2</span></div>
+          <div><b>Captions · charts as she speaks</b>the inner monologue text stream <span>· core</span></div>
+          <div><b>Functions · exact ids and numbers</b>transcript-driven dispatch + SQL <span>· day one, parity</span></div>
+          <div><b>lvRead · notifications in her voice</b>prefill into the core <span>· core</span></div>
+          <div><b class="kn">ಕನ್ನಡ ⇄ English mid-sentence</b>one bilingual core, prefix switch <span>· week 8</span></div>
+          <div><b>Code-mixing · emotion</b>round two on recordings + synthetic <span>· week 12</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fact">
+      <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Kannada Training Factory <small>data in hand · runs on the two H200s at night</small></h2><div class="call" style="padding:3px 10px"><b>Critical path, now 12 weeks:</b> 10,000 h of Kannada ≈ one day per training pass on two H200s.</div></div>
+      <div class="row">
+        <div class="box"><h4>🎧 Kannada data</h4>call-centre recordings + open corpora (Kathbath, Shrutilipi, IndicVoices, Vaani)</div>
+        <div class="box"><h4>🛡 Privacy + diarisation</h4>ids masked in audio; caller / agent channels → pseudo-stereo</div>
+        <div class="box"><h4>💬 Synthetic Sakala dialogues</h4>written by Sarvam, voiced by svara-TTS + IndicF5 in two voices, filtered by SraVaani</div>
+        <div class="box"><h4>🔁 Weekly adapter rounds</h4>A sound + language · B dialogue · C persona + desks · one full pass week 11</div>
+        <div class="box"><h4>📊 Evaluation atlas</h4>Gemini behaviours as numbers · Kannada bank 55 · live UI 18 · English suites</div>
+        <div class="box"><h4>👂 Listener panel</h4>5 Kannada speakers weekly; 20 at week 12, side by side with Gemini</div>
+        <div class="box" style="border-color:var(--green);box-shadow:0 0 14px rgba(75,227,143,.35)"><h4 style="color:var(--green)">✔ Kannada duplex core</h4>weights into the boundary after each gate</div>
+      </div>
+      <div class="timeline">
+        <div class="tl"><b>Weeks 1–2</b>Harness + atlas signed · models probed on our clips · data split and masked · English core live behind the relay</div>
+        <div class="tl"><b>Weeks 3–5</b>Kannada sound + language, then dialogue · 5,000 synthetic h · first Kannada checkpoint week 5</div>
+        <div class="tl"><b>Weeks 6–8</b>Persona, three desks, language switching · <span style="color:var(--amber)">Gate 1:</span> Kannada bank 55, live UI 18, panel within 0.5 of Gemini</div>
+        <div class="tl"><b>Weeks 9–12</b>Round two: code-mixing, voice, emotion · full pass · 20-listener side-by-side · <span style="color:var(--amber)">parity attempt day 90</span></div>
+        <div class="tl last"><b>Sign-off</b>Gemini retired same day · atlas becomes the regression suite · then distil to 3B and scale</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="panel right">
+    <h2>2-GPU Pilot <small>layout B · the two H200s we have</small></h2>
+    <div class="gpus">
+      <div class="gpu"><b>GPU 1 · Duplex worker</b><span>serves the demo core, three desks</span></div>
+      <div class="gpu hot"><b>GPU 2 · Duplex + Sarvam brain (FP8)</b><span>+ weekly adapter training</span></div>
+    </div>
+    <div class="tiles">
+      <div class="tile"><div class="n">6–8</div><div class="t">day one, stock server</div></div>
+      <div class="tile"><div class="n">30–50</div><div class="t">90-day demo, light batching</div></div>
+      <div class="tile a"><div class="n">~130</div><div class="t">7B core after serving work (80–200)</div></div>
+      <div class="tile"><div class="n">~250</div><div class="t">physical ceiling, 7B, not smooth</div></div>
+      <div class="tile g"><div class="n">~300</div><div class="t">3B distilled core, smooth</div></div>
+      <div class="tile"><div class="n">400–600</div><div class="t">people with Mitra open (1 in 4 live)</div></div>
+    </div>
+    <div class="ok"><b>Why 130 on two cards:</b> every session ticks together every 80 ms; weights read once; per-session memory 0.6 GB (7B) or 0.15 GB (3B); 150 caches read in ~19 ms of the 80 ms budget. <b>Training fits too:</b> 450M frames of Kannada ≈ 1 day per pass.</div>
+
+    <h2 style="margin-top:2px">Scale Path <small>same architecture, more identical workers</small></h2>
+    <div class="scale">
+      <div class="srow s1"><b>1,000</b><span>9–11 GPUs</span><span class="k">2 nodes</span><span>₹20–30 lakh / mo rented · ₹3–4 cr bought · month 4–5</span></div>
+      <div class="srow s2"><b>10,000</b><span>80–95 GPUs</span><span class="k">~12 nodes</span><span>₹1.5–2.5 cr / mo · ₹25–35 cr bought · month 8–9</span></div>
+      <div class="srow s3"><b>50,000</b><span>385–475 GPUs</span><span class="k">50–60 nodes</span><span>₹5–8 cr / mo · ₹120–180 cr + hall, 1 MW, 2nd site · month 12–18</span></div>
+    </div>
+    <div class="call" style="margin-top:2px"><b>vs. metered Gemini at 50,000 speakers:</b> about ₹80 cr / month. Owning wins from ~1,000 concurrent sessions.</div>
+    <div class="opt">
+      <div>3B core distilled from our 7B · ÷3 GPUs</div>
+      <div>FP8 weights + 4-bit cache · 2-min window + text summary</div>
+      <div>codec + hearing on cheap cards (L40S)</div>
+      <div>Blackwell for the core pool · ×2 sessions / card</div>
+      <div>70% of turns never touch a model</div>
+      <div>Standby after 20 s · admission control · Postgres + Redis</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="f"><i>1</i><div><b>The parts exist, open and sovereign</b><span>Moshi (CC-BY) + PersonaPlex recipe · Mimi codec · SraVaani, svara-TTS, IndicF5 for Kannada data · Sarvam-105B (Apache 2.0)</span></div></div>
+  <div class="f"><i>2</i><div><b>Open duplex already beats Gemini on timing</b><span>Full-Duplex-Bench: 0.26 s to yield vs Gemini 1.2 s · 100% takeover, 4.3/5 coherence on VoiceChat</span></div></div>
+  <div class="f"><i>3</i><div><b>Training and the pilot fit on our two H200s</b><span>one pass over 10k h ≈ a day · weekly rounds · 90 days to the parity attempt · build cost ₹2–4 cr, mostly people</span></div></div>
+  <div class="f"><i>4</i><div><b>Nothing above or below the core changes</b><span>relay, router, SQL, guard, pipeline, 20+ test suites unchanged · Gemini measured, never copied, retired at sign-off</span></div></div>
+</footer>
+
+</div></body></html>

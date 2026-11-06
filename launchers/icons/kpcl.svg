@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Copy of D:\KPCL POC\KPCL POC\webapp\kpcl-ai-app\app\static\kpcl-mark.svg (the KPCL POC's own mark), for the launcher icon. -->
+  <rect width="100" height="100" rx="22" fill="#ffffff"/>
+  <path d="M50 9 L91 88 L9 88Z" fill="#3b5a8f"/>
+  <path d="M9 88 L91 88 L85 76 L15 76Z" fill="#7fc4e8"/>
+  <path d="M50 22 L60 42 L40 42Z" fill="#ffffff"/>
+  <rect x="41" y="44" width="18" height="12" fill="#ffffff"/>
+  <g stroke="#ffffff" stroke-width="3.2" stroke-linecap="round">
+    <path d="M42 58 L31 84"/><path d="M46.5 58 L42 84"/><path d="M50 58 L50 84"/>
+    <path d="M53.5 58 L58 84"/><path d="M58 58 L69 84"/>
+  </g>
+  <path d="M50 9 L91 88 L9 88Z" fill="none" stroke="#072577" stroke-width="2.4" stroke-linejoin="round"/>
+</svg>

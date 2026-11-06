@@ -1,0 +1,19 @@
+[Unit]
+Description=Mitra voice agent (port 8030, localhost only; Caddy serves it over HTTPS)
+After=network-online.target sakala-poc.service
+Wants=network-online.target sakala-poc.service
+
+[Service]
+User=sakala
+WorkingDirectory=/opt/sakala/mitra
+EnvironmentFile=/opt/sakala/app/.env
+Environment=PYTHONIOENCODING=utf-8
+Environment=SAKALA_URL=http://127.0.0.1:8020
+Environment=MITRA_START_POC=0
+ExecStart=/opt/sakala/venv/bin/python -m uvicorn server.main:app --host 127.0.0.1 --port 8030 --proxy-headers --forwarded-allow-ips 127.0.0.1
+Restart=always
+RestartSec=3
+MemoryHigh=350M
+
+[Install]
+WantedBy=multi-user.target

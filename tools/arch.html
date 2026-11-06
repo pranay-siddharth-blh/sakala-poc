@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sakala AI POC Architecture</title>
+<style>
+  @page { size: 1600px 1040px; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:#12305c; --ink:#1e2633; --muted:#5d6878; --line:#dbe2ec; --bg:#f4f7fb;
+    --c1:#2563eb; --c2:#0d9488; --c3:#16a34a; --c4:#7c3aed; --c5:#db2777; --c6:#ea580c; --c7:#ca8a04; --c8:#0f4c81;
+  }
+  html, body { width:1600px; height:1040px; background:var(--bg); font-family:"Segoe UI", "Nirmala UI", sans-serif; color:var(--ink); }
+  .page { width:1600px; height:1040px; display:flex; flex-direction:column; }
+
+  /* header */
+  header { background:linear-gradient(90deg,#0d2547 0%,#163d73 60%,#1d4f91 100%); color:#fff; padding:16px 28px 14px; display:flex; justify-content:space-between; align-items:center; }
+  header h1 { font-size:27px; font-weight:700; letter-spacing:.2px; }
+  header h1 span { color:#ffd166; }
+  header p { font-size:13.5px; color:#cfdcf0; margin-top:3px; }
+  .hright { text-align:right; font-size:12px; color:#cfdcf0; line-height:1.5; }
+  .hright b { color:#fff; font-size:15px; display:block; }
+  .hright .kn { font-family:"Nirmala UI"; color:#ffd166; font-size:18px; font-weight:700; }
+
+  /* problem strip */
+  .problem { display:flex; gap:10px; padding:10px 24px 4px; align-items:stretch; }
+  .plabel { width:130px; background:#fff3e6; border:1px solid #f6c48f; border-radius:10px; padding:8px 10px; font-size:12px; color:#8a4b00; font-weight:700; line-height:1.3; display:flex; align-items:center; }
+  .stat { flex:1; background:#fff; border:1px solid var(--line); border-radius:10px; padding:7px 10px; display:flex; gap:10px; align-items:center; }
+  .stat .n { font-size:21px; font-weight:800; color:#c2410c; white-space:nowrap; }
+  .stat .t { font-size:11px; color:var(--muted); line-height:1.3; }
+  .stat .t b { color:var(--ink); }
+
+  /* flow */
+  .flowwrap { padding:8px 24px 4px; }
+  .flowtitle { font-size:13px; font-weight:700; color:var(--navy); margin:2px 0 6px; letter-spacing:.3px; text-transform:uppercase; }
+  .flow { display:flex; align-items:stretch; }
+  .arrow { width:16px; display:flex; align-items:center; justify-content:center; color:#8aa0bd; font-size:18px; font-weight:700; }
+  .stage { flex:1; background:#fff; border-radius:12px; border:1px solid var(--line); border-top:5px solid var(--c); display:flex; flex-direction:column; overflow:hidden; box-shadow:0 1px 3px rgba(18,48,92,.07); }
+  .shead { padding:8px 10px 6px; background:var(--t); min-height:56px; }
+  .sn { display:inline-flex; width:22px; height:22px; border-radius:50%; background:var(--c); color:#fff; font-size:12px; font-weight:800; align-items:center; justify-content:center; margin-right:6px; vertical-align:middle; }
+  .stitle { font-size:13px; font-weight:700; color:var(--ink); vertical-align:middle; }
+  .q { font-size:11px; color:var(--c); font-weight:700; margin-top:4px; font-style:italic; }
+  ul { list-style:none; padding:6px 10px 4px; flex:1; }
+  li { font-size:11px; line-height:1.32; padding:3px 0 3px 11px; position:relative; color:#2b3442; }
+  li::before { content:""; position:absolute; left:0; top:8px; width:5px; height:5px; border-radius:50%; background:var(--c); }
+  .callout { margin:2px 8px 6px; font-size:10.5px; background:#fff7e6; border:1px dashed #e0a43a; color:#7a4a00; border-radius:6px; padding:4px 6px; line-height:1.3; }
+  .callout.red { background:#fdecef; border-color:#e58aa0; color:#8a1c3a; }
+  .uc { padding:5px 10px 7px; border-top:1px solid var(--line); font-size:10px; color:var(--muted); }
+  .uc b { color:var(--c); }
+
+  /* bottom panels */
+  .bottom { display:grid; grid-template-columns: 1.35fr 1.05fr 1fr 1fr; gap:10px; padding:8px 24px 8px; flex:1; }
+  .panel { background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
+  .ph { background:var(--navy); color:#fff; font-size:12.5px; font-weight:700; padding:6px 12px; }
+  .pb { padding:8px 12px; font-size:11px; line-height:1.35; flex:1; }
+
+  /* example */
+  .ex { display:flex; gap:10px; }
+  .exq { flex:1; background:#f3f6fa; border-radius:8px; padding:7px 9px; font-size:11px; }
+  .exq .kn { font-family:"Nirmala UI"; font-size:12px; color:#1e2633; }
+  .exq .en { color:var(--muted); margin-top:3px; font-style:italic; }
+  .exq .meta { margin-top:5px; font-size:10px; color:var(--muted); }
+  .bad { margin-top:5px; font-size:10.5px; color:#9f1239; font-weight:700; }
+  .route { flex:1.15; }
+  .rrow { display:flex; font-size:10.6px; border-bottom:1px solid #eef1f6; padding:2px 0; }
+  .rrow span:first-child { width:86px; color:var(--muted); flex-shrink:0; }
+  .rrow span:last-child { font-weight:600; }
+  .rrow.hl span:last-child { color:#15803d; }
+  .ok { margin-top:5px; font-size:10.5px; color:#15803d; font-weight:700; }
+
+  /* ladders */
+  .ladder { margin-bottom:7px; }
+  .lt { font-size:11px; font-weight:700; margin-bottom:4px; }
+  .steps { display:flex; align-items:center; gap:4px; }
+  .step { flex:1; text-align:center; border-radius:7px; padding:5px 3px; font-size:10.3px; font-weight:600; line-height:1.2; }
+  .step small { display:block; font-weight:400; font-size:9.3px; opacity:.85; margin-top:1px; }
+  .sa { color:#94a3b8; font-weight:700; }
+  .g1 { background:#e0ecff; color:#1e40af; } .g2 { background:#c7dbff; color:#1e3a8a; } .g3 { background:#a9c6ff; color:#172554; }
+  .s1 { background:#e8f7ee; color:#166534; } .s2 { background:#cdeedb; color:#14532d; } .s3 { background:#aee3c4; color:#052e16; }
+  .lnote { font-size:10.2px; color:var(--muted); margin-top:3px; }
+  .warn { margin-top:4px; font-size:10.3px; background:#fdecef; color:#8a1c3a; border-radius:6px; padding:4px 7px; font-weight:600; }
+
+  /* foundation */
+  .fgroup { margin-bottom:6px; }
+  .fgroup b { font-size:11px; color:var(--navy); }
+  .chips { display:flex; flex-wrap:wrap; gap:4px; margin-top:3px; }
+  .chip { font-size:10px; padding:2px 7px; border-radius:20px; background:#eef2f8; color:#334155; border:1px solid #dde4ee; }
+  .chip.real { background:#e8f7ee; border-color:#b9e3c8; color:#166534; }
+  .chip.syn { background:#fff4e0; border-color:#f3cf8f; color:#8a5300; }
+  .chip.mock { background:#f1f1f1; border-color:#d6d6d6; color:#555; border-style:dashed; }
+
+  /* guardrails */
+  .gr li { font-size:10.6px; }
+  .gr li::before { background:#0f766e; }
+  .prod { margin-top:5px; border:1.5px dashed #9aa6b6; border-radius:8px; padding:5px 7px; background:#fafbfc; }
+  .prod .pt { font-size:10.5px; font-weight:700; color:#475569; margin-bottom:3px; }
+
+  footer { background:var(--navy); color:#fff; display:flex; justify-content:center; gap:26px; padding:9px 0; font-size:13.5px; font-weight:600; }
+  footer span { color:#ffd166; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div>
+    <h1>Sakala AI &nbsp;·&nbsp; <span>One Request → Exact Officer → Done On Time</span></h1>
+    <p>Built and running (14 Oct 2026): a citizen writes, speaks or sends a photo on WhatsApp; Sakala AI understands it, routes it to the exact field officer of the right department down to the Gram Panchayat, keeps the officer on the clock, and gives the Chief Secretary a live view with charts and a Karnataka map.</p>
+  </div>
+  <div class="hright"><span class="kn">ಸಕಾಲ</span><b>Government of Karnataka</b>Praja Seva Department · Sakala Mission<br>Live POC · Mysuru pilot · 14 October 2026</div>
+</header>
+
+<div class="problem">
+  <div class="plabel">Why this is needed (from the real data shared)</div>
+  <div class="stat" style="flex:1.25"><div class="n">6 dropdowns</div><div class="t">picked <b>by hand</b>; wrong picks cause misrouting</div></div>
+  <div class="stat"><div class="n">39%</div><div class="t">of Mobile App complaints <b>stuck in manual scrutiny</b> before reaching any officer</div></div>
+  <div class="stat"><div class="n">6 depts</div><div class="t">get the <b>same drinking-water problem</b></div></div>
+  <div class="stat"><div class="n">349</div><div class="t">complaints <b>parked at one state desk</b></div></div>
+  <div class="stat"><div class="n">64 / 3,491</div><div class="t">closures have <b>citizen feedback</b></div></div>
+  <div class="stat"><div class="n">1.55M</div><div class="t">Sakala applications <b>delivered late</b> in 2025 (4.5% of 35.2M)</div></div>
+</div>
+
+<div class="flowwrap">
+  <div class="flowtitle">How it works · 8 stages, one pipeline for every channel (as built)</div>
+  <div class="flow">
+
+    <div class="stage" style="--c:var(--c1);--t:#eef4ff">
+      <div class="shead"><span class="sn">1</span><span class="stitle">Entry Channels</span><div class="q">How does a request come in?</div></div>
+      <ul>
+        <li><b>WhatsApp</b> (no app to install): text, voice note, photo of a petition, live location, in Kannada / English</li>
+        <li>Two-way: officer questions, decisions and resolutions arrive back in the same chat; the citizen replies, confirms 👍/👎 or appeals</li>
+        <li>Same pipeline for the 1902 call centre, Praja Seva camps, Grama One / CSC counters and the app</li>
+        <li>Excel / CSV upload for departments with spreadsheets; officer web console</li>
+      </ul>
+      <div class="uc">Solves <b>UC 1 · 2 · 23</b></div>
+    </div>
+    <div class="arrow">›</div>
+
+    <div class="stage" style="--c:var(--c2);--t:#e9f8f6">
+      <div class="shead"><span class="sn">2</span><span class="stitle">Intake &amp; Privacy</span><div class="q">What did the citizen say?</div></div>
+      <ul>
+        <li>Speech-to-text (Kannada / English) on the government's own model gateway</li>
+        <li>Vision model reads the petition photo; unreadable or unrelated images are refused, never guessed</li>
+        <li>Language detection + one-line English summary</li>
+        <li><b>Masks</b> phone, Aadhaar, email and card numbers before any AI step</li>
+        <li>Pulls out Sakala GSC numbers and links them to the application</li>
+      </ul>
+      <div class="uc">Solves <b>UC 2 · 4</b></div>
+    </div>
+    <div class="arrow">›</div>
+
+    <div class="stage" style="--c:var(--c3);--t:#eaf7ee">
+      <div class="shead"><span class="sn">3</span><span class="stitle">Validate &amp; Complete</span><div class="q">Is it complete and clean?</div></div>
+      <ul>
+        <li>Village / GP resolved from the message (Kannada names transliterated), GPS, or a pick-list; taluk-level services skip the village question</li>
+        <li>Duplicate check: same service, same GP → linked, not re-filed</li>
+        <li>Per-service checklist for Sakala applications (name, village, document photo)</li>
+        <li>Wrong-door check: RTI, other departments → told where to go</li>
+      </ul>
+      <div class="callout">↺ AI agent keeps asking the citizen until the application is complete. Sakala's legal clock starts only then.</div>
+      <div class="uc">Solves <b>UC 1 · 3 · 5</b></div>
+    </div>
+    <div class="arrow">›</div>
+
+    <div class="stage" style="--c:var(--c4);--t:#f3eefe">
+      <div class="shead"><span class="sn">4</span><span class="stitle">AI Understanding</span><div class="q">WHAT is the problem?</div></div>
+      <ul>
+        <li>Finds the 5 most similar real grievances (9,999 from 3–9 Oct 2026)</li>
+        <li>The AI model picks <b>Department → Line Dept → Service → Grievance</b> from the official master only (enum-constrained)</li>
+        <li>A second, offline model trained on the real data must agree; keyword rules override for RTI / other departments / new applications</li>
+        <li>Confidence below a threshold tuned from measured accuracy → scrutiny desk with the top-3 options</li>
+        <li>Vulnerability flag: elderly, widow, disabled, pension, ration</li>
+      </ul>
+      <div class="uc">Solves <b>UC 6 · 9</b></div>
+    </div>
+    <div class="arrow">›</div>
+
+    <div class="stage" style="--c:var(--c5);--t:#fdeef5">
+      <div class="shead"><span class="sn">5</span><span class="stitle">Route to Officer</span><div class="q">WHO owns it, here?</div></div>
+      <ul>
+        <li>Service → officer role learned from the real assignments (Khata → Tahsildar 100%, water → AE RDWS 100%, street light → PDO 97%)</li>
+        <li>Role + taluk + GP → one named officer: PDO of that GP, Tahsildar / ADLR / Food Inspector / AEE of that taluk</li>
+        <li><b>97.6%</b> agreement with the real iPGRS officer on 673 Mysuru cases; 92.5% end to end from text alone</li>
+        <li>Every decision stores its evidence: confidence, threshold, rules, similar cases, location source, officer rule</li>
+      </ul>
+      <div class="callout red">⚑ Unsure, outside the master, or village unknown? → Scrutiny desk (L2/L3) decides and re-routes; the citizen is told. Never a silent guess.</div>
+      <div class="uc">Solves <b>UC 7 · 8 · 10</b></div>
+    </div>
+    <div class="arrow">›</div>
+
+    <div class="stage" style="--c:var(--c6);--t:#fff2ea">
+      <div class="shead"><span class="sn">6</span><span class="stitle">Deadlines &amp; Alerts</span><div class="q">Is the officer acting on time?</div></div>
+      <ul>
+        <li>Grievance deadlines per level (7 / 5 / 3 days, assumed) + the Sakala legal clock for applications</li>
+        <li>Due-tomorrow reminders, then <b>automatic 3-level escalation</b>; the citizen is told each time</li>
+        <li>Officer inbox: open cases, days left, vulnerable first, accept / ask info / return / reject (reason mandatory) / resolve</li>
+        <li>₹20/day (max ₹500) ordered by the Competent Officer → Form C notice → <b>HRMS debit</b> (mock)</li>
+        <li>Officer messages translated to Kannada for Kannada chats</li>
+      </ul>
+      <div class="uc">Solves <b>UC 11 · 12 · 13 · 14</b></div>
+    </div>
+    <div class="arrow">›</div>
+
+    <div class="stage" style="--c:var(--c7);--t:#fdf7e3">
+      <div class="shead"><span class="sn">7</span><span class="stitle">Resolution Check</span><div class="q">Was it really solved?</div></div>
+      <ul>
+        <li>AI compares the complaint with the officer's Action Taken Report</li>
+        <li>Score 5 Fully resolved … 1 Irrelevant; below 4 the case stays open and is flagged</li>
+        <li>AI drafts a first ATR the officer edits</li>
+        <li>Citizen asked on WhatsApp "was it solved?" · 👎 re-opens the case and informs the senior</li>
+      </ul>
+      <div class="callout">↺ Not resolved, or the citizen says no? → re-opened, back to stage 6 with the senior officer informed.</div>
+      <div class="uc">Solves <b>UC 15</b></div>
+    </div>
+    <div class="arrow">›</div>
+
+    <div class="stage" style="--c:var(--c8);--t:#eaf1f8">
+      <div class="shead"><span class="sn">8</span><span class="stitle">Leadership View</span><div class="q">What should leaders act on?</div></div>
+      <ul>
+        <li>Command dashboard with a live <b>Karnataka map</b>: districts shaded by real 2025 late delivery; zoom to taluk; on-time / overdue / vulnerable filters</li>
+        <li><b>Sakala district tracker</b>: real 2025 reports, early warning for slipping districts, fairer scorecard</li>
+        <li>Insights: hotspots with AI-suggested fixes, Praja Seva history, misrouting detector, data quality</li>
+        <li>Wednesday Review Pack (EN + ಕನ್ನಡ) for Tahsildar/EO → AC → DC → CS; Form E-4 list</li>
+        <li><b>AI mode</b>: ask anything, answered only from data tools, with bar / line / donut charts</li>
+      </ul>
+      <div class="callout">⚠ Accuracy proof screen: live test on real complaints (dept 97.5% · service 95% · officer 92.5% on 40 cases).</div>
+      <div class="uc">Solves <b>UC 16 – 22</b></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="bottom">
+
+  <div class="panel">
+    <div class="ph">A · One complaint, end to end (as the demo runs it)</div>
+    <div class="pb">
+      <div class="ex">
+        <div class="exq">
+          <div class="kn">"ನಮ್ಮ ಗೊರಹಳ್ಳಿ ಗ್ರಾಮದಲ್ಲಿ ಕಳೆದ ಒಂದು ವಾರದಿಂದ ಕುಡಿಯುವ ನೀರು ಬರುತ್ತಿಲ್ಲ"</div>
+          <div class="en">"No drinking water in our Gorahalli village for the last one week."</div>
+          <div class="meta">Source: WhatsApp (text) · village read from the Kannada message → Chapparadahalli GP, Piriyapatna</div>
+          <div class="bad">Today: 6 dropdowns picked by an operator; 39% of app complaints wait in manual scrutiny.</div>
+        </div>
+        <div class="route">
+          <div class="rrow"><span>Department</span><span>RDPR</span></div>
+          <div class="rrow"><span>Line Dept</span><span>Rural Drinking Water &amp; Sanitation</span></div>
+          <div class="rrow"><span>Service</span><span>Provision of Drinking Water</span></div>
+          <div class="rrow"><span>Confidence</span><span>95% · offline model agrees · 4 of 5 similar real cases</span></div>
+          <div class="rrow"><span>Location</span><span>Gorahalli → Chapparadahalli GP → Piriyapatna</span></div>
+          <div class="rrow hl"><span>Officer (L1)</span><span>AE/JE Rural Drinking Water, Piriyapatna (100% of 229 real cases)</span></div>
+          <div class="rrow"><span>Escalates to</span><span>EO TP Piriyapatna → ZP CEO Mysuru</span></div>
+          <div class="ok">Routed in about 3 s; the citizen gets the officer's name and deadline on WhatsApp.</div>
+        </div>
+      </div>
+      <div class="lnote">Grievance timelines (7 / 5 / 3 days) and Sakala service timelines are assumed until confirmed by the department.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph">B · Two escalation ladders, never mixed</div>
+    <div class="pb">
+      <div class="ladder">
+        <div class="lt" style="color:#1e40af">Grievance (complaint) · iPGRS / Janaspandana</div>
+        <div class="steps">
+          <div class="step g1">LMF (L1)<small>field officer</small></div><span class="sa">→</span>
+          <div class="step g2">L2<small>next senior</small></div><span class="sa">→</span>
+          <div class="step g3">L3<small>top level</small></div>
+        </div>
+        <div class="lnote">Moves up automatically when the deadline passes; the citizen can escalate twice.</div>
+      </div>
+      <div class="ladder">
+        <div class="lt" style="color:#166534">Sakala service application · GSC number</div>
+        <div class="steps">
+          <div class="step s1">Designated Officer<small>delivers service</small></div><span class="sa">→</span>
+          <div class="step s2">Competent Officer<small>1st appeal · 30 days</small></div><span class="sa">→</span>
+          <div class="step s3">Appellate Authority<small>2nd appeal · 60 days</small></div>
+        </div>
+        <div class="lnote">Late service: ₹20/day up to ₹500, recovered from the officer's salary via HRMS.</div>
+      </div>
+      <div class="warn">Sakala compensation applies only to Sakala applications, never to ordinary complaints.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph">C · Foundation: masters, data &amp; connectors</div>
+    <div class="pb">
+      <div class="fgroup"><b>Official masters (single source of truth)</b>
+        <div class="chips"><span class="chip">6-level category master</span><span class="chip">Jurisdiction &amp; officer master</span><span class="chip">Sakala service timelines (assumed)</span><span class="chip mock">Holiday calendar</span><span class="chip mock">Full LGD village master</span></div></div>
+      <div class="fgroup"><b>Data used in the POC</b>
+        <div class="chips"><span class="chip real">9,999 real grievances (masked)</span><span class="chip real">Sakala district reports 2025 (35.2M applications)</span><span class="chip real">701 real Mysuru cases with their real officers</span><span class="chip syn">2 Sakala applications + 10 grievances for the demo</span><span class="chip syn">Sample scanned forms</span></div></div>
+      <div class="fgroup"><b>Connectors for every digital level</b>
+        <div class="chips"><span class="chip real">Excel / CSV upload (e.g. monthly reports)</span><span class="chip real">Paper scan</span><span class="chip real">Officer console</span><span class="chip mock">Department APIs (mock)</span><span class="chip mock">HRMS (mock)</span></div></div>
+      <div class="lnote">Stack: Python (FastAPI) · SQLite · government model gateway (text + vision model, Kannada speech-to-text) inside the network · offline fallback model trained on the real data · single-page web app with Chart.js and a KGIS/OSM map.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph">D · Guardrails &amp; what comes next</div>
+    <div class="pb">
+      <ul class="gr" style="padding:0 0 0 0;">
+        <li>AI chooses <b>only from official masters</b>; anything else goes to a person</li>
+        <li>Auto-route threshold <b>tuned from measured accuracy</b>; below it a human decides with top-3 options</li>
+        <li>Every routing decision keeps its <b>evidence</b> (confidence, rules, similar cases, officer rule) for audit</li>
+        <li>AI mode answers <b>only from data tools</b>; instruction-override and off-data prompts are refused and logged</li>
+        <li>Unreadable photos / silent audio are refused, never guessed; every AI call is logged for weekly review</li>
+        <li>A chat sees only its own cases; only the owner acts, only the Competent Officer compensates; ladders never mix</li>
+        <li>Rejection needs a reason and the citizen is told the appeal officer (reply APPEAL); 👎 re-opens</li>
+        <li>Per-client rate limits and size caps, as in the sister POCs; all rendered text sanitised</li>
+      </ul>
+      <div class="prod">
+        <div class="pt">Production phase (shown in UI only)</div>
+        <div class="chips"><span class="chip mock">AI callback to citizen</span><span class="chip mock">Namma Seva ★ rating</span><span class="chip mock">Live iPGRS / Sakala / HRMS</span><span class="chip mock">SMS / WhatsApp alerts</span><span class="chip mock">Learning loop</span><span class="chip mock">Early-warning alerts</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div>Right department</div><span>•</span><div>Exact officer, down to village / GP</div><span>•</span><div>Nothing silently delayed</div><span>•</span><div>Accountability by law</div><span>•</span><div>Leaders see everything</div>
+</footer>
+
+</div>
+</body>
+</html>

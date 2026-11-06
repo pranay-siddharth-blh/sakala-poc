@@ -1,0 +1,30 @@
+<script>
+(function(){
+  const q=new URLSearchParams(location.search), flow=q.get('flow'); if(!flow) return;
+  const W=ms=>new Promise(r=>setTimeout(r,ms));
+  const click=t=>{ const b=[...document.querySelectorAll('.wa-btns button:not([disabled])')].reverse().find(x=>x.textContent.includes(t)); if(!b) throw new Error('no button '+t); b.click(); };
+  const sheet=t=>{ const b=[...document.querySelectorAll('.wa-sheet button')].find(x=>x.textContent.includes(t)); if(!b) throw new Error('no row '+t); b.click(); };
+  const dump=()=>{ const mine=S.cases.filter(c=>c.mine); const last=mine[mine.length-1];
+    document.body.setAttribute('data-res', JSON.stringify({flow, msgs:WA.history.length, last: last?{id:last.id,owner:last.owner,level:last.level,gp:last.gp,taluk:last.taluk,svc:last.u.svc,sakala:!!last.sakala,status:last.status}:null,
+      stages:[...document.querySelectorAll('.pl-step')].map(e=>e.className.replace('pl-step','').trim()||'-').join(','), notes:[...document.querySelectorAll('.pl-note')].map(e=>e.textContent).join(' | '),
+      track:document.querySelector('[data-cv="track"] .cnt')?.textContent, bodyScroll: (b=>b.scrollHeight-b.clientHeight-b.scrollTop)(document.querySelector('#waBody')) })); };
+  (async()=>{ try{
+    await W(1500); click('English'); await W(1200);
+    if(flow==='water'){ handleFree(WA_SAMPLES[0][1]); await W(2600); click('Share location'); await W(2600); click('Submit'); await W(2600); }
+    if(flow==='khata'){ handleFree(WA_SAMPLES[1][1]); await W(2600); click('Hunsur'); await W(1500); [...document.querySelectorAll('.wa-listbtn:not([disabled])')].pop().click(); await W(400); sheet('Halebeedu'); await W(2000); click('Submit'); await W(2600); }
+    if(flow==='voice'){ $('#waSend').click(); await W(6500); click('Submit'); await W(2600); }
+    if(flow==='photo'){ $('#waAttach').click(); await W(5000); click('Submit'); await W(2600); }
+    if(flow==='power'){ handleFree(WA_SAMPLES[5][1]); await W(3500); }
+    if(flow==='light'){ handleFree(WA_SAMPLES[4][1]); await W(2600); click('Piriyapatna'); await W(1500); [...document.querySelectorAll('.wa-listbtn:not([disabled])')].pop().click(); await W(400); sheet('Komalapura'); await W(2000); click('Submit'); await W(2600); }
+    if(flow==='apply'){ [...document.querySelectorAll('.wa-listbtn:not([disabled])')].pop().click(); await W(400); sheet('Apply for a service'); await W(1500); [...document.querySelectorAll('.wa-listbtn:not([disabled])')].pop().click(); await W(400); sheet('Caste'); await W(1500);
+      document.querySelector('#waQuick button').click(); await W(1500); [...document.querySelectorAll('.wa-listbtn:not([disabled])')].pop().click(); await W(400); sheet('Atthigudu'); await W(1500); click('document photo'); await W(3500); }
+    if(flow==='cert'){ handleFree('I need a caste and income certificate for my son'); await W(2000); click('Apply now'); await W(1500); }
+    if(flow==='hi'){ handleFree('hi'); await W(1500); handleFree('track'); await W(1500); }
+    if(flow==='rti'){ handleFree('I want to file an RTI application'); await W(2500); }
+    if(flow==='low'){ handleFree('my neighbour is troubling me'); await W(2500); }
+    if(flow==='track'){ handleFree(WA_SAMPLES[0][1]); await W(2600); click('Share location'); await W(2600); click('Submit'); await W(2600); click('Track this'); await W(1500); }
+    if(flow==='switch'){ handleFree(WA_SAMPLES[0][1]); await W(2600); click('Share location'); await W(2600); click('Submit'); await W(2600); document.querySelector('#plOpen').click(); await W(1500); document.body.setAttribute('data-drawer', document.querySelector('#drawer').className + '|' + (document.querySelector('#drawer h2')?.textContent||'')); S.profile='citizen'; render(); await W(500); }
+    dump();
+  }catch(e){ document.body.setAttribute('data-ferr', e.message); dump(); } })();
+})();
+</script>

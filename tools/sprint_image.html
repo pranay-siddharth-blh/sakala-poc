@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sovereign English Mitra: the ten-day sprint</title>
+<style>
+  @page { size: 1600px 1150px; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:#12305c; --ink:#1e2633; --muted:#5d6878; --line:#dbe2ec; --bg:#f4f7fb;
+    --cs:#db2777; --rc:#2563eb; --fd:#ea580c; --he:#7c3aed; --io:#0d9488; --gate:#d97706; --night:#334155;
+  }
+  html, body { width:1600px; background:var(--bg); font-family:"Segoe UI","Nirmala UI",sans-serif; color:var(--ink); }
+  .page { width:1600px; min-height:1150px; display:flex; flex-direction:column; }
+  code { font-family:Consolas,"Cascadia Mono",monospace; font-size:9.4px; background:#eef2f8; border-radius:3px; padding:0 3px; color:#1e3a5f; }
+
+  header { background:linear-gradient(90deg,#0d2547 0%,#163d73 60%,#1d4f91 100%); color:#fff; padding:15px 28px 13px; display:flex; justify-content:space-between; align-items:center; gap:24px; }
+  header h1 { font-size:27px; font-weight:700; }
+  header h1 span { color:#ffd166; }
+  header p { font-size:13.2px; color:#cfdcf0; margin-top:3px; max-width:1230px; }
+  .hright { text-align:right; font-size:12px; color:#cfdcf0; line-height:1.5; white-space:nowrap; }
+  .hright b { color:#fff; font-size:15px; display:block; }
+  .hright .kn { font-family:"Nirmala UI"; color:#ffd166; font-size:18px; font-weight:700; }
+
+  .strip { display:flex; gap:9px; padding:9px 24px 2px; }
+  .plabel { width:120px; background:#e8f7ee; border:1px solid #9fdcb6; border-radius:10px; padding:7px 10px; font-size:11.5px; color:#166534; font-weight:700; line-height:1.3; display:flex; align-items:center; }
+  .stat { flex:1; background:#fff; border:1px solid var(--line); border-radius:10px; padding:6px 10px; display:flex; gap:9px; align-items:center; }
+  .stat .n { font-size:19px; font-weight:800; color:#0f766e; white-space:nowrap; }
+  .stat .t { font-size:10.6px; color:var(--muted); line-height:1.3; }
+  .stat .t b { color:var(--ink); }
+
+  .sect { font-size:12.5px; font-weight:700; color:var(--navy); letter-spacing:.3px; text-transform:uppercase; padding:9px 24px 5px; display:flex; justify-content:space-between; }
+  .sect small { text-transform:none; letter-spacing:0; font-weight:600; color:var(--muted); font-size:11px; }
+
+  /* the timeline grid */
+  .tl { margin:0 24px; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:0 1px 3px rgba(18,48,92,.06); display:grid; grid-template-columns:112px repeat(10,1fr); }
+  .tl > div { border-bottom:1px solid #eef1f6; border-right:1px solid #eef1f6; }
+  .tl > div:nth-child(11n) { border-right:0; }
+  .dh { background:#f8fafc; padding:6px 6px 5px; text-align:center; line-height:1.2; }
+  .dh b { display:block; font-size:12px; color:var(--navy); }
+  .dh small { display:block; font-size:9.6px; color:var(--muted); margin-top:1px; }
+  .dh em { display:block; font-style:normal; font-size:9.8px; color:#2b3442; margin-top:3px; font-weight:600; }
+  .dh.gate { background:#fff4e0; }
+  .dh.gate b { color:#9a4d00; }
+  .dh.gate .g { display:inline-block; margin-top:3px; font-size:9px; font-weight:800; color:#fff; background:var(--gate); border-radius:9px; padding:1px 7px; }
+  .dh.last { background:#e8f7ee; } .dh.last b { color:#166534; }
+  .corner { background:#f8fafc; padding:6px 8px; font-size:9.8px; color:var(--muted); display:flex; align-items:flex-end; line-height:1.3; }
+  .tlabel { background:var(--c); color:#fff; padding:8px 9px; display:flex; flex-direction:column; justify-content:center; }
+  .tlabel b { font-size:12.4px; line-height:1.15; }
+  .tlabel small { font-size:9.6px; opacity:.92; margin-top:4px; line-height:1.3; }
+  .cell { padding:5px 6px; font-size:9.7px; line-height:1.28; color:#2b3442; background:#fff; }
+  .cell.g { background:#fffaf0; }
+  .cell.night { background:#f1f5f9; }
+  .cell b { color:var(--c); font-weight:700; display:block; font-size:9.8px; margin-bottom:1px; }
+  .cell.done { background:#f0fbf5; font-size:9.4px; color:#14532d; line-height:1.27; }
+  .cell.done b { color:#0e7a4f; display:inline; }
+  .nlabel { background:var(--night); color:#fff; padding:6px 9px; font-size:10.4px; font-weight:700; display:flex; align-items:center; line-height:1.2; }
+  .ncell { padding:4px 6px; font-size:9.4px; color:#334155; background:#f8fafc; line-height:1.25; }
+  .ncell.on { background:#e2e8f0; font-weight:600; }
+  .glabel { background:#e8f7ee; color:#166534; padding:6px 9px; font-size:10.4px; font-weight:700; display:flex; align-items:center; }
+
+  .bottom { display:grid; grid-template-columns: 1.05fr 1.25fr 1.15fr 0.95fr; gap:10px; padding:8px 24px 8px; flex:1; }
+  .panel { background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
+  .ph { background:var(--navy); color:#fff; font-size:12.3px; font-weight:700; padding:6px 12px; }
+  .ph.amber { background:var(--gate); }
+  .pb { padding:7px 11px; font-size:10.4px; line-height:1.33; flex:1; }
+  .tbl { width:100%; border-collapse:collapse; font-size:10px; }
+  .tbl th { text-align:left; font-size:9.4px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.3px; padding:2px 4px; border-bottom:1.5px solid var(--line); }
+  .tbl td { padding:2.4px 4px; border-bottom:1px solid #eef1f6; vertical-align:top; line-height:1.26; }
+  .tbl td:first-child { font-weight:700; }
+  .tbl td.n { white-space:nowrap; color:#0f766e; font-weight:700; }
+  .gcard { border:1.5px solid #f3cf93; background:#fffaf0; border-radius:8px; padding:5px 8px; margin-bottom:6px; }
+  .gcard b { color:#9a4d00; display:block; font-size:10.8px; }
+  .gcard .p { font-size:9.9px; margin-top:2px; }
+  .gcard .f { font-size:9.5px; color:#7c2d12; margin-top:2px; }
+  .gcard .f strong { color:#9a3412; }
+  .steps { display:flex; flex-direction:column; gap:3px; }
+  .st { display:grid; grid-template-columns: 18px 1fr; gap:6px; align-items:start; font-size:10.1px; line-height:1.3; }
+  .st i { font-style:normal; width:18px; height:18px; border-radius:50%; background:var(--c); color:#fff; font-size:9.5px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .sub { font-weight:700; color:var(--navy); font-size:10.8px; margin:5px 0 3px; }
+  .note { font-size:9.6px; color:var(--muted); margin-top:4px; line-height:1.3; }
+  .good { margin-top:5px; font-size:10px; background:#e8f7ee; color:#14532d; border-radius:6px; padding:4px 7px; font-weight:600; }
+  .bad { margin-top:5px; font-size:10px; background:#fff1f1; color:#7f1d1d; border-radius:6px; padding:4px 7px; font-weight:600; }
+  .gpu { border:1px solid var(--line); border-radius:8px; padding:5px 8px; margin-bottom:6px; background:#f8fafc; }
+  .gpu b { display:block; color:var(--navy); font-size:10.6px; }
+  .gpu .bar { display:flex; height:14px; border-radius:4px; overflow:hidden; margin:4px 0 3px; border:1px solid #cbd5e1; }
+  .gpu .bar span { font-size:8.6px; color:#fff; display:flex; align-items:center; justify-content:center; white-space:nowrap; overflow:hidden; text-overflow:clip; padding:0 2px; }
+  .gpu .bar .free { background:#e2e8f0; color:#334155; }
+  .gpu small { font-size:9.3px; color:var(--muted); line-height:1.3; display:block; }
+
+  footer { background:var(--navy); color:#fff; display:flex; justify-content:center; gap:26px; padding:9px 0; font-size:13.5px; font-weight:600; }
+  footer span { color:#ffd166; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div>
+    <h1>Sovereign English Mitra &nbsp;·&nbsp; <span>The ten-day sprint, 27 Oct → 5 Nov 2026</span></h1>
+    <p>Mitra's English voice moves from Gemini Live to our own native full-duplex core (PersonaPlex 7B, Moshi family) on the two H200s in the office server, trained by us, with the Gemini key removed from the English path on day 9. Four tracks, three gates, one buffer day. Everything else in Mitra (router, SQL, guard, read-back, pipeline, every suite) stays as it is; Kannada stays on Gemini until its own programme.</p>
+  </div>
+  <div class="hright"><span class="kn">ಸಕಾಲ · ಮಿತ್ರ</span><b>Government of Karnataka</b>Praja Seva Department<br>Sprint document v1.0 · 27 Oct 2026</div>
+</header>
+
+<div class="strip">
+  <div class="plabel">The sprint in numbers</div>
+  <div class="stat"><div class="n">10 days</div><div class="t"><b>Mon 27 Oct → Wed 5 Nov</b> · six people on four tracks, plus AI ops and legal</div></div>
+  <div class="stat"><div class="n">2 × H200</div><div class="t"><b>GPU 1</b> serves the core all day · <b>GPU 2</b> brain by day, trainer and factory by night</div></div>
+  <div class="stat"><div class="n">3 gates</div><div class="t"><b>day 3</b> a sovereign turn · <b>day 5</b> suites green · <b>day 8</b> atlas + panel; each with a written fallback</div></div>
+  <div class="stat"><div class="n">&lt; 0.5 s</div><div class="t"><b>first word</b> · barge-in cut &lt; 0.25 s · 0 id or number deviations</div></div>
+  <div class="stat"><div class="n">0</div><div class="t"><b>Gemini calls</b> on the English path at the rehearsal; nothing from Gemini is ever stored or trained on</div></div>
+  <div class="stat"><div class="n">2 rounds</div><div class="t"><b>LoRA training</b> overnight on day 4 and day 7, each judged the next morning</div></div>
+</div>
+
+<div class="sect">Ten days, four tracks <small>amber columns are gate days · the bottom rows show which card is busy at night and what "done" means each evening</small></div>
+<div class="tl">
+  <div class="corner">track ↓ · day →</div>
+  <div class="dh"><b>Day 0</b><small>Mon 27 Oct</small><em>Pull everything, measure Gemini</em></div>
+  <div class="dh"><b>Day 1</b><small>Tue 28 Oct</small><em>The core speaks on our cards</em></div>
+  <div class="dh"><b>Day 2</b><small>Wed 29 Oct</small><em>Results spoken in her voice</em></div>
+  <div class="dh gate"><b>Day 3</b><small>Thu 30 Oct</small><em>Go / no-go on text forcing</em><span class="g">GATE A</span></div>
+  <div class="dh"><b>Day 4</b><small>Fri 31 Oct</small><em>Round one trains overnight</em></div>
+  <div class="dh gate"><b>Day 5</b><small>Sat 1 Nov</small><em>Round one judged · wake word</em><span class="g">GATE B</span></div>
+  <div class="dh"><b>Day 6</b><small>Sun 2 Nov</small><em>Many callers at once</em></div>
+  <div class="dh"><b>Day 7</b><small>Mon 3 Nov</small><em>Round two trains · regression</em></div>
+  <div class="dh gate"><b>Day 8</b><small>Tue 4 Nov</small><em>Freeze</em><span class="g">GATE C</span></div>
+  <div class="dh last"><b>Day 9</b><small>Wed 5 Nov</small><em>Rehearsal and sign-off</em></div>
+
+  <!-- CS -->
+  <div class="tlabel" style="--c:var(--cs)"><b>Core &amp; serving</b><small>2 people · PersonaPlex, Moshi, text forcing, LoRA, batching</small></div>
+  <div class="cell" style="--c:var(--cs)"><b>Read &amp; decide</b>PersonaPlex and moshi-finetune code read; text-forcing approach on paper; licence read with legal</div>
+  <div class="cell" style="--c:var(--cs)"><b>Core up</b>PersonaPlex on GPU 1 (Rust server); Kyutai STT on the user channel; gpt-oss-120b on vLLM, GPU 2</div>
+  <div class="cell" style="--c:var(--cs)"><b>Text forcing</b>Function result words forced into the core's text stream, spoken while listening; voice prompt from the consented clip</div>
+  <div class="cell g" style="--c:var(--cs)"><b>Go / no-go</b>Forcing made clean, or the same-voice TTS fallback wired; latency traced per stage; echo gate tuned</div>
+  <div class="cell" style="--c:var(--cs)"><b>LoRA round 1</b>20:00 on GPU 2: persona, Sakala wording, ids digit by digit, lead phrase while a function runs</div>
+  <div class="cell g" style="--c:var(--cs)"><b>Round 1 judged</b>Atlas vs the base; pacing and pause fixes; better weights promoted to GPU 1</div>
+  <div class="cell" style="--c:var(--cs)"><b>Load test</b>Batched sessions; 200 virtual callers in steps of 25; sessions per card at a held p99 tick; 2-h soak at 50</div>
+  <div class="cell" style="--c:var(--cs)"><b>LoRA round 2</b>20:00: day-5 findings, interruptions and repairs, noisy numbers, officer and CS registers</div>
+  <div class="cell g" style="--c:var(--cs)"><b>Freeze</b>Round 2 judged; winning weights frozen and hashed; serving config frozen</div>
+  <div class="cell" style="--c:var(--cs)"><b>Rehearsal</b>Demo on the two cards, Gemini key removed from the English path; egress log captured</div>
+
+  <!-- RC -->
+  <div class="tlabel" style="--c:var(--rc)"><b>Relay &amp; client</b><small>1 person · /ws/live adapter, dispatch, captions, desks, phone</small></div>
+  <div class="cell" style="--c:var(--rc)"><b>Prepare</b>Adapter contract agreed with CS; Gemini adapter isolated behind a switch</div>
+  <div class="cell" style="--c:var(--rc)"><b>New upstream</b>PCM in / PCM out behind <code>/ws/live</code>; core text as captions; STT text as the user transcript</div>
+  <div class="cell" style="--c:var(--rc)"><b>Dispatch</b>STT text → existing brain → <code>tools.execute</code> → prefill; read-back question and confirm bar</div>
+  <div class="cell g" style="--c:var(--rc)"><b>Desks alive</b>Captions word by word, stage reveal, number checks, notifications in session, three desks + portal</div>
+  <div class="cell" style="--c:var(--rc)"><b>Phone path</b>Phone layout, Standby and 20 s idle, mute = mic only, Stop = the cut, document reply by the core</div>
+  <div class="cell g" style="--c:var(--rc)"><b>"Hey Mitra"</b>openWakeWord model trained from Piper clips; no Gemini transcription of room talk</div>
+  <div class="cell" style="--c:var(--rc)"><b>Scheduler lite</b>Admission control on the two cards; per-card session count; drain before a weight swap</div>
+  <div class="cell" style="--c:var(--rc)"><b>Full regression</b>settle 12 · mute 10 · stage 19 · board 13 · map 13 · app 17 · portal 16 · theme 11 · layout 35+35 · phone 14 · doc 10</div>
+  <div class="cell g" style="--c:var(--rc)"><b>Client frozen</b>Gemini path kept for Kannada only; the English process starts without the key</div>
+  <div class="cell" style="--c:var(--rc)"><b>Handoff</b>Notes, the model notice with CC-BY credits, the switch procedure</div>
+
+  <!-- FD -->
+  <div class="tlabel" style="--c:var(--fd)"><b>Factory &amp; data</b><small>1 person · corpora, scripts, voices, alignment, filtering</small></div>
+  <div class="cell" style="--c:var(--fd)"><b>Fetch</b>Open Yap 1K requested 09:00; DailyTalk, AMI, MUSAN, RIRS fetched; consented Mitra voice clip recorded</div>
+  <div class="cell" style="--c:var(--fd)"><b>Pipeline</b>script → two voices → stereo WAV (Mitra left, user right) → aligner → moshi-finetune format; 10 dialogues</div>
+  <div class="cell" style="--c:var(--fd)"><b>500 scripts</b>Sakala conversations by gpt-oss-120b with interruptions, repairs, backchannels; voiced</div>
+  <div class="cell g" style="--c:var(--fd)"><b>2,000 filtered</b>Canary + Whisper agree, WER &lt; 10%; Open Yap subset converted on arrival</div>
+  <div class="cell" style="--c:var(--fd)"><b>Augment</b>MUSAN noise, room responses, phone band; round-1 manifest to CS</div>
+  <div class="cell g" style="--c:var(--fd)"><b>Round 2 queue</b>3,000 more hours; panel and suite failures turned into targeted scripts</div>
+  <div class="cell" style="--c:var(--fd)"><b>Hard cases</b>Far-field, crosstalk, interruptions at every point, numbers under noise</div>
+  <div class="cell" style="--c:var(--fd)"><b>Dataset frozen</b>Round-2 manifest; factory documented for the Kannada programme</div>
+  <div class="cell g" style="--c:var(--fd)"><b>Archive</b>Datasets and manifests archived; licence credits compiled</div>
+  <div class="cell" style="--c:var(--fd)"><b>Carry on</b>Nightly factory cron left running for Kannada</div>
+
+  <!-- HE -->
+  <div class="tlabel" style="--c:var(--he)"><b>Harness &amp; evaluation</b><small>1 person · virtual mic, atlas, suites, FDB, panels, scorecard</small></div>
+  <div class="cell" style="--c:var(--he)"><b>Atlas probes</b>Pause, interruption at 20 points, id reading, tool wait and lead phrase, noise; 10 repeats each</div>
+  <div class="cell" style="--c:var(--he)"><b>Virtual mic</b>At the WebSocket with ms traces; atlas measured on Gemini and signed as the reference</div>
+  <div class="cell" style="--c:var(--he)"><b>FDB baseline</b>Full-Duplex-Bench v1 on stock PersonaPlex; suites' fake Live pointed at the core</div>
+  <div class="cell g" style="--c:var(--he)"><b>First suites</b>relay 15 · live-UI 10 · turns 24 · nav 22 on the core; failures bucketed core / relay / harness</div>
+  <div class="cell" style="--c:var(--he)"><b>Banks</b>bank 113 · guardrails 59 on the core; deviations file reviewed line by line</div>
+  <div class="cell g" style="--c:var(--he)"><b>Atlas + panel</b>Atlas on the core; 5-listener panel, 6 conversations; FDB v1 and v1.5 on round-1 weights</div>
+  <div class="cell" style="--c:var(--he)"><b>Stress families</b>Noise, far-field, crosstalk, interruption-at-every-point added; load traces plotted</div>
+  <div class="cell" style="--c:var(--he)"><b>Tune + recruit</b>Barge-in budget and pause tolerance from the atlas; 20 listeners recruited; 12 conversations recorded on both</div>
+  <div class="cell g" style="--c:var(--he)"><b>Scorecard</b>20-listener blind A/B scored; every definition-of-done row with its measured value</div>
+  <div class="cell" style="--c:var(--he)"><b>Sign-off sheet</b>Filled from the evidence folder; demo script walked twice</div>
+
+  <!-- night row -->
+  <div class="nlabel">GPU 2 at night<br><small style="font-weight:400;opacity:.85">20:00 → 07:00</small></div>
+  <div class="ncell">downloads, hashes</div>
+  <div class="ncell">factory: 10 dialogues</div>
+  <div class="ncell">factory: 500 scripts voiced</div>
+  <div class="ncell">factory: 2,000 filtered</div>
+  <div class="ncell on">LoRA round 1 trains</div>
+  <div class="ncell">factory: round-2 synthesis</div>
+  <div class="ncell">factory: hard cases</div>
+  <div class="ncell on">LoRA round 2 trains</div>
+  <div class="ncell">idle, weights frozen</div>
+  <div class="ncell">backups; cron for Kannada</div>
+
+  <!-- done row -->
+  <div class="glabel">Done when</div>
+  <div class="cell done">Every model loads on the right card; atlas list signed; licence read answered</div>
+  <div class="cell done">A person talks to the core on the web desk and hears it answer; Gemini atlas file filled</div>
+  <div class="cell done">"Open cases in Hunsur" → function call → number spoken by the core; FDB baseline in evidence</div>
+  <div class="cell done"><b>Gate A signed</b>: sovereign turn end to end, first word &lt; 0.6 s, id equals the result</div>
+  <div class="cell done">Trainer running with a manifest; bank and guardrails results owned</div>
+  <div class="cell done"><b>Gate B signed</b>: six suites green, FDB ≥ PersonaPlex, panel within 0.5</div>
+  <div class="cell done">Sessions-per-card number and the soak result in evidence</div>
+  <div class="cell done">Regression results in evidence; trainer running; panel material ready</div>
+  <div class="cell done"><b>Gate C signed</b>: atlas in tolerance, panel within 0.33; scorecard with no empty cell</div>
+  <div class="cell done"><b>Sprint owner signs</b> the sheet; anything unsigned listed with a date</div>
+</div>
+
+<div class="sect">What done means · the three gates · the two cards · the risks that matter <small>every number on the sign-off sheet points to a file in mitra/evidence/sprint27/</small></div>
+<div class="bottom">
+  <div class="panel"><div class="ph">Definition of done, day 10</div><div class="pb">
+    <table class="tbl">
+      <tr><th>Behaviour</th><th>Target</th></tr>
+      <tr><td>First word</td><td class="n">&lt; 0.5 s median · &lt; 0.8 s p95</td></tr>
+      <tr><td>Barge-in cut</td><td class="n">&lt; 0.25 s</td></tr>
+      <tr><td>Ids and numbers spoken</td><td class="n">0 deviations</td></tr>
+      <tr><td>Existing English suites</td><td class="n">all green</td></tr>
+      <tr><td>Full-Duplex-Bench v1 / v1.5</td><td class="n">≥ PersonaPlex published</td></tr>
+      <tr><td>20-listener panel vs Gemini</td><td class="n">within 0.33 on naturalness</td></tr>
+      <tr><td>Sessions per card, p99 tick held</td><td class="n">≥ 50 on GPU 1</td></tr>
+      <tr><td>2-hour soak at 50</td><td class="n">0 dropouts</td></tr>
+      <tr><td>Egress during the rehearsal</td><td class="n">no Gemini host</td></tr>
+    </table>
+    <div class="good">Captions and charts as she speaks · document reply in her voice · read-back bar · notifications · mute and stop: as on Gemini today.</div>
+    <div class="bad">Out of scope, stated on day 0: Kannada on the core · Gemini's emotional range · Gemini's exact voice.</div>
+  </div></div>
+
+  <div class="panel"><div class="ph amber">The three gates, each with a written fallback</div><div class="pb">
+    <div class="gcard"><b>Gate A · Thu 30 Oct 18:30 · a sovereign English turn end to end</b>
+      <div class="p"><strong>Pass:</strong> a question on the web desk → brain → function → result spoken by the core in Mitra's voice while the mic stays open; first word &lt; 0.6 s; the id equals the result. Signed on a recording.</div>
+      <div class="f"><strong>If missed:</strong> same-voice fallback that evening: Kyutai TTS 1.6B on the same voice embedding streamed into the output while the core keeps listening. Full duplex kept; a small voice mismatch on facts.</div></div>
+    <div class="gcard"><b>Gate B · Sat 1 Nov 18:30 · suites green, FDB at PersonaPlex's level</b>
+      <div class="p"><strong>Pass:</strong> relay 15, live-UI 10, turns 24, nav 22, bank 113, guardrails 59 green on round-1 weights; FDB v1 ≥ published PersonaPlex; 5-listener panel within 0.5 of Gemini.</div>
+      <div class="f"><strong>If missed:</strong> the load test moves to day 7; round-2 data is cut to what the failures need.</div></div>
+    <div class="gcard"><b>Gate C · Tue 4 Nov 18:30 · atlas in tolerance, panel within a third of a point</b>
+      <div class="p"><strong>Pass:</strong> every atlas behaviour inside its tolerance on round-2 weights; 20-listener blind A/B within 0.33 on naturalness, not below on correctness; FDB held.</div>
+      <div class="f"><strong>If missed:</strong> the best weights are frozen anyway, the gap is written on the scorecard, the rehearsal goes ahead with the gap stated. A third round is a follow-on, not a slip.</div></div>
+    <div class="note">The plan has no slack after day 8: day 9 is the only buffer. A missed gate is written the same evening with its fallback, never deferred.</div>
+  </div></div>
+
+  <div class="panel"><div class="ph">The two H200s, by day and by night</div><div class="pb">
+    <div class="gpu"><b>GPU 1 · 141 GB · the duplex worker, day and night</b>
+      <div class="bar"><span style="flex:16;background:var(--cs)">core 16</span><span style="flex:4;background:#be185d"></span><span style="flex:60;background:#f472b6">sessions 60</span><span class="free" style="flex:61">headroom 61</span></div>
+      <small>PersonaPlex 16 GB · STT 2 GB + Mimi + VAD · 0.6 GB per session: 50 promised, 100–150 fit · never used for training · admission control refuses the session it cannot serve well.</small></div>
+    <div class="gpu"><b>GPU 2 · 141 GB · by day</b>
+      <div class="bar"><span style="flex:65;background:var(--io)">gpt-oss-120b 65</span><span style="flex:20;background:#0f766e">cache 20</span><span style="flex:16;background:var(--cs)">w2 16</span><span class="free" style="flex:40">free 40</span></div>
+      <small>The brain answers guided JSON for the existing router; the second worker carries overflow sessions.</small></div>
+    <div class="gpu"><b>GPU 2 · 141 GB · by night (days 4 and 7)</b>
+      <div class="bar"><span style="flex:65;background:var(--io)">gpt-oss-120b 65</span><span style="flex:40;background:var(--night)">finetune 40</span><span style="flex:20;background:#64748b">tools 20</span><span class="free" style="flex:16">paused</span></div>
+      <small>The brain stays up for script writing; moshi-finetune 40 GB peak; TTS, ASR and the aligner 20 GB; the second worker is paused at 20:00 and back at 07:00.</small></div>
+    <div class="sub">Ports and evidence</div>
+    <div class="note">Core 8040 / 8041 · vLLM 8050 · Kyutai STT 8042 · Mitra 8030 unchanged · test instances 8031 / 8032 via <code>MITRA_LIVE_URL</code> · egress logged at the firewall · <code>mitra/evidence/sprint27/</code> holds every measurement · backups in <code>tools/backups/sprint27/</code> · 8000 and 8001 untouched.</div>
+  </div></div>
+
+  <div class="panel"><div class="ph">Risks, in order, with the fallback</div><div class="pb">
+    <div class="steps" style="--c:#b91c1c">
+      <div class="st"><i>1</i><div><b>Text forcing not clean.</b> Gate A decides; the same-voice TTS fallback is ready on day 2.</div></div>
+      <div class="st"><i>2</i><div><b>Open Yap arrives late.</b> DailyTalk, AMI and synthetic data carry round 1.</div></div>
+      <div class="st"><i>3</i><div><b>VRAM contention on GPU 2.</b> Train only at night with the worker paused; Qwen3-30B-A3B as the lighter brain on those nights.</div></div>
+      <div class="st"><i>4</i><div><b>NVIDIA licence read.</b> Answered on day 0; Moshiko (CC-BY-4.0) is the base either way, one extra night if needed.</div></div>
+      <div class="st"><i>5</i><div><b>"Perfect" drifts to Gemini's voice or emotion.</b> Out of scope on day 0; a dated follow-on, not a slipped sprint.</div></div>
+      <div class="st"><i>6</i><div><b>Latency under load.</b> Promise the count at which the p99 tick holds; the 3B distillation is the post-sprint lever.</div></div>
+      <div class="st"><i>7</i><div><b>Synthetic accent learnt.</b> Two voice families; real speech weighted up in round 2.</div></div>
+    </div>
+    <div class="sub">Rhythm</div>
+    <div class="note">09:30 stand-up (15 min) · 18:30 evening check, gates judged here · 20:00–07:00 GPU 2 belongs to the trainer and the factory · a daily note: done, not done and why, decisions.</div>
+    <div class="good">Nothing from Gemini is stored except the atlas numbers. No Gemini output enters a dataset. KPCL and RDPR stay read-only.</div>
+  </div></div>
+</div>
+
+<footer><span>Day 3</span> a sovereign turn &nbsp;·&nbsp; <span>Day 5</span> suites green &nbsp;·&nbsp; <span>Day 8</span> atlas and panel &nbsp;·&nbsp; <span>Day 9</span> rehearsal with the Gemini key removed &nbsp;·&nbsp; <span>100% sovereign</span> on the English path</footer>
+
+</div>
+</body>
+</html>

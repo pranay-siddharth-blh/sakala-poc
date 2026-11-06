@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Sakala WhatsApp POC: the Sakala clock-gavel (from app/web/assets/sakala-logo.svg) with a WhatsApp-green chat badge. -->
+  <defs>
+    <linearGradient id="sakFace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbc944"/><stop offset="1" stop-color="#f1a81d"/></linearGradient>
+    <linearGradient id="sakWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9652d"/><stop offset="1" stop-color="#7c4216"/></linearGradient>
+    <linearGradient id="sakHandle" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a5602a"/><stop offset="1" stop-color="#774013"/></linearGradient>
+    <linearGradient id="wa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fe07a"/><stop offset="1" stop-color="#1ebe57"/></linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="58" fill="#ffffff"/>
+  <g transform="translate(14 30) scale(0.98)">
+    <rect x="38" y="152" width="160" height="10" rx="2" fill="url(#sakWood)"/>
+    <rect x="92" y="140" width="72" height="13" rx="2" fill="url(#sakWood)"/>
+    <rect x="99" y="133" width="58" height="9" rx="4.5" fill="#b9753c"/>
+    <path d="M 70 103 L 22 156" stroke="url(#sakHandle)" stroke-width="12.5" stroke-linecap="round"/>
+    <path d="M 30 147 L 36 140" stroke="#e9b57f" stroke-width="12.5" opacity=".6"/>
+    <circle cx="92" cy="81" r="40" fill="#d8262e"/>
+    <circle cx="105" cy="70" r="40" fill="url(#sakFace)" stroke="#fde6a3" stroke-width="2.2"/>
+    <path d="M 105 70 L 84 54" stroke="#121212" stroke-width="5.6" stroke-linecap="round"/>
+    <path d="M 105 70 L 127 45" stroke="#121212" stroke-width="4.6" stroke-linecap="round"/>
+    <circle cx="105" cy="70" r="4.6" fill="#121212"/>
+  </g>
+  <!-- WhatsApp-style chat badge -->
+  <g transform="translate(150 146)">
+    <circle cx="46" cy="46" r="50" fill="#ffffff"/>
+    <path d="M46 6 A40 40 0 1 1 20.5 77 L6 86 L13.5 71.5 A40 40 0 0 1 46 6 Z" fill="url(#wa)"/>
+    <path d="M33 29c-2 0-4.5 2.4-4.5 6.3 0 8.8 12.8 24.2 25.6 25.6 3.8.4 6.4-2 6.6-4.2.1-1.3-.4-2-1.4-2.6l-5.4-3c-1-.5-2-.2-2.6.6l-2 2.6c-.6.7-1.6.9-2.4.4-3.7-2-7.1-5.4-9-9.1-.4-.8-.2-1.8.5-2.3l2.6-2c.8-.6 1.1-1.7.6-2.6l-3-5.4C38 29.3 36 29 33 29z" fill="#ffffff"/>
+  </g>
+</svg>

@@ -1,0 +1,14 @@
+<script>
+setTimeout(()=>{ try{
+  const q=new URLSearchParams(location.search);
+  if(q.get('allq')){ const out=QS.map(x=>{const r=answer(x);return (r.none?'NONE':'OK')+':'+x.slice(0,25)}); document.body.setAttribute('data-ans',out.join('|')); }
+  if(q.get('views')){ for (const p of ['citizen','officer','cs']){ S.profile=p; render(); }
+    for (const v of ['inbox','due','sakala','team','scrutiny']){ S.profile='officer'; S.officer='rev_ac'; S.officerView=v; render(); }
+    for (const v of ['dash','ai','sakala','all']){ S.profile='cs'; S.csView=v; render(); }
+    S.profile='citizen'; for (const s of SOURCES){ S.citizenSrc=s.k; S.citizenView='file'; render(); } S.citizenView='track'; render();
+    tick(7); tick(7); S.profile='cs'; S.csView='dash'; render(); wednesdayPack();
+    for (const c of S.cases){ S.profile='officer'; S.officer=c.owner; openCase(c.id); }
+    document.body.setAttribute('data-views','ALL-OK cases='+S.cases.length+' escalated='+S.cases.filter(c=>c.history.some(h=>h.what.startsWith('Auto-escalated'))).length);
+  }
+ }catch(e){ document.body.setAttribute('data-err2', e.message+' '+e.stack.split('\n')[1]); } }, 1500);
+</script>
